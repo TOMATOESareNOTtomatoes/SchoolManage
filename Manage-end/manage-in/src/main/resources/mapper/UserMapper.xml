@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fanqie.manage.mapper.UserMapper">
+
+    <!-- TODO： 逻辑删除的也能查询出来  现在 -->
+    <select id="getAllUser" resultType="com.fanqie.manage.entity.User">
+        SELECT user_id, user_name, password, number, faculty
+        FROM user
+    </select>
+
+    <select id="getUserList" resultType="com.fanqie.manage.param.userInfo">
+        SELECT u.user_id, u.user_name, u.password, u.number, u.faculty, pr.permissions
+        FROM user u
+                 LEFT JOIN privileges_user p ON u.user_id = p.user_id
+                 LEFT JOIN privileges pr ON p.privileges_id = pr.privileges_id
+    </select>
+
+    <update id="updateByUerId" parameterType="com.fanqie.manage.entity.User">
+        UPDATE user
+        SET user_name    = #{userName},
+            number       = #{number},
+            password     = #{password},
+            faculty      = #{faculty},
+            gmt_modified = NOW()
+        WHERE user_id = #{userId};
+    </update>
+
+    <select id="getUserByUserId" resultType="com.fanqie.manage.entity.User">
+        SELECT user_id, user_name, password, number, faculty
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

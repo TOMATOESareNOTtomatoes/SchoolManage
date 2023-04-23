@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fanqie.manage.mapper.MainOutMapper">
+
+    <insert id="Insert" parameterType="com.fanqie.manage.entity.MainOut">
+        INSERT INTO main_out (user_id, additional, is_sure, user_name, number, faculty, class_name, class_number,
+                              class_row, teach_name, theoretical_hours, practical_hours, teach_type,
+                              caseload_process_id, caseload, is_delete, gmt_create, gmt_modified, term)
+        VALUES (#{userId}, #{additional}, #{isSure}, #{userName}, #{number}, #{faculty}, #{className}, #{classNumber},
+                #{classRow}, #{teachName}, #{theoreticalHours}, #{practicalHours}, #{teachType}, #{caseloadProcessId},
+                #{caseload}, #{isDelete}, #{gmtCreate}, #{gmtModified}, #{term})
+    </insert>
+
+</mapper>

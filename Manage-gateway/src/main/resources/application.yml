@@ -1,0 +1,21 @@
+# 配置网关
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: notice-service  #服务名称，路由规则名称，不重复就行
+          uri: lb://notice-service  #路径的服务名称
+          predicates:
+            - Path=/notice/**  # 访问  通知  路径转发用户服务
+        - id: product-service # 此名称随意定义
+          uri: lb://product-service #使用负载均衡,调用服务名,这是服务名
+          predicates:
+            - Path=/product/** # 访问product相关,转发到product服务
+        - id: tset-service # 此名称随意定义
+          uri: lb://test-service #使用负载均衡,调用服务名,这是服务名
+          predicates:
+            - Path=/test/** # 访问product相关,转发到product服务
+        - id: manage-service # 此名称随意定义
+          uri: lb://manage-service #使用负载均衡,调用服务名,这是服务名
+          predicates:
+            - Path=/manage/** # 访问product相关,转发到product服务

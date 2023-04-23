@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fanqie.manage.mapper.CoefficientTheoryMapper">
+
+<select id="getByClassNumber" resultType="com.fanqie.manage.entity.CoefficientTheory">
+    SELECT id, class_number, coefficient, gmt_create, gmt_modified
+    FROM coefficient_theory
+    WHERE class_number = #{classNumber} AND is_delete=0
+</select>
+
+</mapper>

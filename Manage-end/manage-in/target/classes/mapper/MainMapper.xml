@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fanqie.manage.mapper.MainMapper">
+
+<!--    -->
+<select id="selectByUniqueNumber" resultType="com.fanqie.manage.entity.Main">
+    SELECT id, term, user_id, unique_number, additional, is_sure, is_delete, gmt_create, gmt_modified
+    FROM main
+    WHERE unique_number = #{uniqueNumber}
+</select>
+
+
+
+</mapper>

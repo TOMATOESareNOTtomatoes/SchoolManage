@@ -1,0 +1,58 @@
+package com.fanqie.manage.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import java.util.Date;
+import com.baomidou.mybatisplus.annotation.TableId;
+import java.io.Serializable;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+/**
+ * <p>
+ * 
+ * </p>
+ *
+ * @author fq
+ * @since 2023-04-03
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+public class PrivilegesUser implements Serializable {
+
+    private static final long serialVersionUID=1L;
+
+    /**
+     * 自动增长的id
+     */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+
+    /**
+     * 用户的id
+     */
+    private String userId;
+
+    /**
+     * 权限表的id，对应不同的权限
+     */
+    private String privilegesId;
+
+    /**
+     * 逻辑删除；0表示未删除；1表示删除
+     */
+    private Integer isDelete;
+
+    /**
+     * 创建时间
+     */
+    private Date gmtCreate;
+
+    /**
+     * 更新时间
+     */
+    private Date gmtModified;
+
+
+}
