@@ -94,9 +94,97 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     public R getUserDoSimple() {
         List<MainAllView> allViews = mainAllViewViewService.queryAll();
         //查询出视图。遍历视图，统计出计算结果。
+        for (MainAllView view : allViews) {
+            double classCoefficient = 0;//班级人数多
+            if ((view.getClassNumber() / view.getClassRow()) > 45) {
+                classCoefficient = (view.getClassNumber() / view.getClassRow()) * 0.01;
+            }
+            AdditionalCoefficients ac = new AdditionalCoefficients(0, 1, 1);
+            view.setSpecial("无");
+            if (view.getAdditional() != null) {
+                ac = additionalCoefficientsService.getByAdditionalId(view.getAdditional());
+                String sSpecial="";
+                if(ac.getIsFirst()==0.1){
+                    sSpecial+="第一次授课；";
+                }
+                if(ac.getIsDoubleLanguage()==1.5){
+                    sSpecial+="双语授课；";
+                }
+                if(ac.getIsWeekend()==1.1){
+                    sSpecial+="周末上课；";
+                }
+                view.setSpecial(sSpecial);
+            }
 
-        System.out.println("shitu:" + allViews.get(5).getTerm());
-        return R.ok();
+            double dou = 0;//保存工作量的过程量
+            int iPracticalHours=0;
+            if(view.getPracticalHours()!=null){
+                iPracticalHours=Integer.parseInt(view.getPracticalHours());//实验学时
+            }
+            //  TheoreticalHours 理论学时  ，为零，说明全是实验，当作上机
+            if (view.getTheoreticalHours() == null || view.getTheoreticalHours().equals("") ||
+                    view.getTheoreticalHours().equals("0")) {
+                //全实践课，查看根据班级情况，返回实践课内容
+                CoefficientPractice cp;
+                CoefficientPractice cp1;//因为重复的系数不一样，创建了两个变量，虽然一个也可以。
+
+                if (view.getClassRow() % 2 == 0) {
+                    cp = coefficientPracticeService.getBYClassNumber(2);//算两个班一起上，不存在重复
+                    // doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()));//设置上机系数
+                    dou += iPracticalHours * (cp.getCoefficient() + ac.getIsFirst() + classCoefficient);//2个班一起上的工作量
+                    if (view.getClassRow() > 3) {
+                        //说明是4班以上，并且是双数
+                        cp1 = coefficientPracticeService.getBYClassNumber(4);//四个班以上，重复的系数
+                        // doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()) + "|" + cp1.getCoefficient());//设置上机系数
+                        dou += iPracticalHours * (cp1.getCoefficient() + ac.getIsFirst() + classCoefficient) * (view.getClassRow() / 2 - 1);//2个班一起上的工作量
+                    }
+                    //实验时长*（系数+班级人数系数+是否新课
+                } else {
+                    //
+                    cp = coefficientPracticeService.getBYClassNumber(1);
+                    dou += iPracticalHours * (cp.getCoefficient() + classCoefficient + ac.getIsFirst());//2个班一起上的工作量
+                    if (view.getClassRow() > 2) {
+                        //说明是2个班以上，是单数
+                        cp1 = coefficientPracticeService.getBYClassNumber(3);
+                        //doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()) + "|" + cp1.getCoefficient());//设置上机系数
+                        dou += iPracticalHours * (cp1.getCoefficient() + ac.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);//单个班上课
+                    }
+                }
+
+            } else {
+                //有两种情况，一种上机学时为零，全是理论；一种一半一半， 实验系数查询不同的表，理论一样
+                // 根据班级数量，查看理论课的系数
+                CoefficientExperiment ce;//理论表系数
+                int iTheoreticalHours = 0;
+                if(view.getTheoreticalHours()!=null){
+                    iTheoreticalHours = Integer.parseInt(view.getTheoreticalHours());
+                }
+                if (view.getClassRow() <= 4) {
+                    //四个班以下
+                    //System.out.println("班级数量；" + view.getClassRow());
+                    ce = coefficientExperimentService.getByClassNumber(view.getClassRow());
+                } else { //四个班以上，按照四个班算
+                    ce = coefficientExperimentService.getByClassNumber(4);
+                }
+                dou += (iTheoreticalHours * (ce.getCoefficient() + ac.getIsFirst() + classCoefficient));//理论课部分的工作量
+                dou *= ac.getIsDoubleLanguage();//如果是双语，乘以1.5,理论才有
+
+                //doInfo.setCoefficientL(String.valueOf(ce.getCoefficient()));//设置理论系数
+                CoefficientTheory ct = coefficientTheoryService.getByClassNumber(1);//有理论的，实验系数
+                //System.out.println("ct:" + ct.getCoefficient());
+                //doInfo.setCoefficientS(String.valueOf(ct.getCoefficient()));
+                dou += iPracticalHours * (ct.getCoefficient() + ac.getIsFirst() + classCoefficient);
+                CoefficientTheory ct1;
+                if (view.getClassRow() > 1) {//班级数大于一的话，
+                    ct1 = coefficientTheoryService.getByClassNumber(2);
+                    //doInfo.setCoefficientS(String.valueOf(ct.getCoefficient()) + "|" + ct1.getCoefficient());
+                    dou += iPracticalHours * (ct1.getCoefficient() + ac.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);
+                }
+            }
+            dou *= ac.getIsWeekend();//是否周末，实验部分没有双语的
+            view.setOutcome(dou);
+        }
+        return R.ok().data("allUserDoNuSure", allViews);
     }
 
     /**
@@ -119,7 +207,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         List<userDoInfo> doInfoList = new ArrayList<>();
         for (MainAllView view : mainAllViews) {
             //如果已经确认过了，则直接去查询结果表
-            if (view.getIsSure()!=null && view.getIsSure() == 1) {
+            if (view.getIsSure() != null && view.getIsSure() == 1) {
                 //todo:去mainOut表查询数据返回
                 userDoInfo u1 = mainOutService.seleceByUserId(view.getUserId());
                 doInfoList.add(u1);
@@ -180,7 +268,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     if (view.getClassRow() > 2) {
                         //说明是2个班以上，是单数
                         cp1 = coefficientPracticeService.getBYClassNumber(3);
-                        doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()) + "|" + cp1.getCoefficient());//设置上机系数
+                        doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
                         dou += doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);//单个班上课
                     }
                 }
@@ -206,7 +294,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 CoefficientTheory ct1;
                 if (view.getClassRow() > 1) {//班级数大于一的话，
                     ct1 = coefficientTheoryService.getByClassNumber(2);
-                    doInfo.setCoefficientS(String.valueOf(ct.getCoefficient()) + "|" + ct1.getCoefficient());
+                    doInfo.setCoefficientS(ct.getCoefficient() + "|" + ct1.getCoefficient());
                     dou += doInfo.getPracticalHours() * (ct1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);
                 }
             }
@@ -222,7 +310,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
      * 实现用户自己添加课程 特殊 情况。
      * 处理过程：
      * 根据唯一编码：查询Main表。看看是否有过特殊情况记录
-     *              有，查询该记录，并修改。没有，就添加记录
+     * 有，查询该记录，并修改。没有，就添加记录
      *
      * @param userDoInfo
      * @return
@@ -231,25 +319,26 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     public R addAdditional(userDoInfo userDoInfo) {
         //先查询是否有记录，在main表
         Main main = mainMapper.selectByUniqueNumber(userDoInfo.getUniqueNumber());
-        if(main==null){
+        if (main == null) {
             return R.error().message("查询不到课程信息！");
         }
-        if(main.getAdditional()==null){
+        if (main.getAdditional() == null) {
             //添加记录，
             String additionalID = UUIDStringUtils.randomUUID();
-            AdditionalCoefficients ac=new AdditionalCoefficients();
+            AdditionalCoefficients ac = new AdditionalCoefficients();
             ac.setAdditionalId(additionalID);
-            //TODO：这个应该查表的，这些比例
+            //TODO：**********这个应该查表的，这些比例
             //现在是写死的，（在前端）。查表的话，要再写一个接收对象，参数是true 或 false的
+
             ac.setIsFirst(userDoInfo.getIsFirst());
             ac.setIsDoubleLanguage(userDoInfo.getIsDoubleLanguage());
             ac.setIsWeekend(userDoInfo.getIsWeekend());
             ac.setIsSure(0);
             int row = additionalCoefficientsService.addAdditional(ac);
-            if(row==1){
+            if (row == 1) {
                 main.setAdditional(additionalID);
                 int i = mainMapper.updateById(main);
-                if(i==1){
+                if (i == 1) {
                     return R.ok().message("添加用户特殊情况成功！");
                 }
             }
@@ -257,15 +346,15 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         }
         //存在特殊情况！
         AdditionalCoefficients acs = additionalCoefficientsService.getByAdditionalId(main.getAdditional());
-        if(acs==null){
+        if (acs == null) {
             return R.error().message("用户的特殊情况申请异常");//查询不到记录，
         }
         acs.setIsSure(userDoInfo.getIsSure());
         acs.setIsWeekend(userDoInfo.getIsWeekend());
         acs.setIsDoubleLanguage(userDoInfo.getIsDoubleLanguage());
         acs.setIsSure(0);
-        boolean b=additionalCoefficientsService.updateById(acs);
-        if(b){
+        boolean b = additionalCoefficientsService.updateById(acs);
+        if (b) {
             return R.ok().message("成功修改用户特殊系数！");
         }
         //先在AC表添加记录，
@@ -275,31 +364,32 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     /**
      * 教师确认课程信息
      * 处理流程：
-     *      在main表上面确认信息：is-sure=1
-     *    在mainOut表上面添加一条记录。
+     * 在main表上面确认信息：is-sure=1
+     * 在mainOut表上面添加一条记录。
+     *
      * @param userDoInfo
      * @return
      */
     @Override
     public R UserSureDo(userDoInfo userDoInfo) {
-        MainOut mainOut=new MainOut();
+        MainOut mainOut = new MainOut();
         //先确认是否存在特殊情况：
         //TODO:,应该创建新方法的，偷懒了，通过用户id查询比较符合逻辑
-        Main main= mainMapper.selectByUniqueNumber(userDoInfo.getUniqueNumber());
-        if(main.getAdditional()!=null){
+        Main main = mainMapper.selectByUniqueNumber(userDoInfo.getUniqueNumber());
+        if (main.getAdditional() != null) {
             //通过additionalId查询是否存在未确认的特殊情况申请，存在的话，不能通过确认。
             int i = additionalCoefficientsService.sureUnSureByAdditionalId(main.getAdditional());
-            if(i==1){
+            if (i == 1) {
                 //说明存在未确认的特殊情况，不能确认课程信息
                 return R.error().message("存在未确认的特殊记录！请等待相关人员确认信息后再确认！");
             }
             //存在，且确认了，
-            //todo：确认教务处同意，而不是不同意。查询数据库实现。
+            //todo：*******确认教务处同意，而不是不同意。查询数据库实现。
             mainOut.setAdditional(main.getAdditional());
         }
         //查询教职工信息
         User u1 = userService.getUserByUserId(userDoInfo.getUserId());
-        if(u1==null){
+        if (u1 == null) {
             return R.error().message("用户的信息查询不到！");
         }
         mainOut.setFaculty(u1.getFaculty());
@@ -315,11 +405,11 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         mainOut.setTeachType("auto");
         mainOut.setIsSure("0");
         mainOut.setCaseload(String.valueOf(userDoInfo.getAdd()));
-        //TODO:必要的，完善功能，保存计算过程，
+        //TODO:***********必要的，完善功能，保存计算过程，
         //初步流程，新表，理论学时、系数、
         //理论学时*（系数+是否新课+班级人数是否超标）*是否双语*是否周末  +  实验学时*（系数+是否新课+班级人数是否超标）*是否周末
         int i = mainOutService.Insert(mainOut);
-        if(i==1){
+        if (i == 1) {
             return R.ok().message("成功确认！");
         }
         return R.error().message("确认课程工作量失败");
@@ -333,22 +423,32 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R getAdditionalSure() {
         //查询ac表，所有未确认的记录，并联合teach表和teachClass表查询课程名称和班级信息，返回结果。
-        List<acSure> ac= additionalCoefficientsService.getAdditionalSure();
-        if(ac==null){
+        List<acSure> ac = additionalCoefficientsService.getAdditionalSure();
+        if (ac == null) {
             return R.error().message("不存在未确认的信息！！");
         }
-        return R.ok().message("成功查询").data("AdditionalSure",ac);
+        return R.ok().message("成功查询").data("AdditionalSure", ac);
     }
 
     //确认用户特殊情况的接口
     @Override
     public R AdditionalSure(acSure ac) {
-        return null;
+        int result = additionalCoefficientsService.updateIsSureByAdditionalId(ac.getAdditionalId(), 1);
+        if (result == 1) {
+            return R.ok().message("成功确认特殊情况！");
+        } else {
+            return R.error().message("确认特殊情况失败！");
+        }
     }
 
     //否认用户特殊情况的接口
     @Override
     public R AdditionalUnSure(acSure ac) {
-        return null;
+        int result = additionalCoefficientsService.updateIsSureByAdditionalId(ac.getAdditionalId(), 2);
+        if (result == 1) {
+            return R.ok().message("成功确认特殊情况！");
+        } else {
+            return R.error().message("确认特殊情况失败！");
+        }
     }
 }

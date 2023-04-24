@@ -70,5 +70,11 @@ public class AdditionalCoefficients implements Serializable {
      */
     private Date gmtModified;
 
+    public AdditionalCoefficients(int IsFirst, int IsDoubleLanguage, int IsWeekend) {
+        this.setIsFirst(IsFirst);
+        this.setIsDoubleLanguage(IsDoubleLanguage);
+        this.setIsWeekend(IsWeekend);
+    }
+    public AdditionalCoefficients(){    }
 
 }

@@ -1,10 +1,11 @@
 package com.fanqie.manage.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fanqie.manage.entity.AdditionalCoefficients;
 import com.fanqie.manage.mapper.AdditionalCoefficientsMapper;
 import com.fanqie.manage.param.acSure;
 import com.fanqie.manage.service.AdditionalCoefficientsService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author fq
@@ -26,6 +27,7 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
 
     /**
      * 通过唯一id 返回特殊情况表。
+     *
      * @param additional
      * @return
      */
@@ -36,6 +38,7 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
 
     /**
      * 添加记录
+     *
      * @param ac
      * @return
      */
@@ -54,5 +57,22 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
     @Override
     public List<acSure> getAdditionalSure() {
         return mapper.getAdditionalSure();
+    }
+
+    //跟新院系确认
+    @Override
+    public int updateIsSureByAdditionalId(String additionalId, int i) {
+        //根据唯一id，查看是否存在记录，
+        //根据参数addition查看表里是否有记录，而且没有被逻辑删除
+        QueryWrapper<AdditionalCoefficients> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("additional_id", additionalId).eq("is_delete", 0);
+        long count = mapper.selectCount(queryWrapper);
+        if (count > 0) {
+            //存在记录
+            //根据参数additionId，将表里的is_sure属性更改为参数i
+            return mapper.updateIsSureByAdditionalId(additionalId, i);
+        } else {
+            return 0;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.fanqie.manage.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fanqie.commonutils.utils.R;
 import com.fanqie.manage.entity.MainOut;
 import com.fanqie.manage.mapper.MainOutMapper;
 import com.fanqie.manage.param.userDoInfo;
@@ -30,5 +31,14 @@ public class MainOutServiceImpl extends ServiceImpl<MainOutMapper, MainOut> impl
     @Override
     public int Insert(MainOut mainOut) {
         return mainOutMapper.Insert(mainOut) ;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    @Override
+    public R AllUser() {
+        return null;
     }
 }

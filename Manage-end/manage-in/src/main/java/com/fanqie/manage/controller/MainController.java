@@ -41,12 +41,18 @@ public class MainController {
      * 添加getUserDo方法，返回是自定义的R封装类，没有请求参数，处理是通过调用main_all_view视图映射类查询实现 的方法实现的
      * 这个返回的是没有确认的工作量实时更新的，
      * 通过视图结合逻辑查询得出的工作量，这是老师还没有确认的版本
+     * 总
      */
 
+    /**
+     * 获取所有教师的工作量（未确认）
+     * @return mainAllView实体类的列表
+     */
     @GetMapping("getUserDo")
     @ResponseBody
-    @Permission({PermissionEnum.ADMIN})
+    @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
     public R getUserDo() {
+        System.out.println("获取所有未确认用户的 工作量列表接口正常！");
         return mainService.getUserDoSimple();
     }
 
@@ -113,12 +119,13 @@ public class MainController {
      * @param ac
      * @return
      */
+
     @PostMapping("AdditionalUnSure")
     @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
     public R AdditionalUnSure(@RequestBody acSure ac){
         return mainService.AdditionalUnSure(ac);
     }
-
+//  @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
 
 
 }

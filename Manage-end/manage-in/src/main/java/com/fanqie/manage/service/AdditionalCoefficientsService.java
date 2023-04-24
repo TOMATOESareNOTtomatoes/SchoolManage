@@ -25,4 +25,6 @@ public interface AdditionalCoefficientsService extends IService<AdditionalCoeffi
     int sureUnSureByAdditionalId(String additional);
 
     List<acSure> getAdditionalSure();
+
+    int updateIsSureByAdditionalId(String additionalId, int i);
 }

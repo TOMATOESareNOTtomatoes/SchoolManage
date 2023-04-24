@@ -96,4 +96,16 @@ public class MainAllView implements Serializable {
      */
     private String teachType;
 
+    /**
+     * 表里没有的属性。
+     * 实时计算出的 结果。不一定是最终的。
+     */
+    private double outcome;
+
+    /**
+     * 表里没有的属性。
+     * 特殊情况描述
+     */
+    private String special;
+
 }

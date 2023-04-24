@@ -1,5 +1,6 @@
 package com.fanqie.manage.service;
 
+import com.fanqie.commonutils.utils.R;
 import com.fanqie.manage.entity.MainOut;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fanqie.manage.param.userDoInfo;
@@ -18,4 +19,6 @@ public interface MainOutService extends IService<MainOut> {
 
     int Insert(MainOut mainOut);
 
+    //返回所有已确认的工作量信息。
+    R AllUser();
 }

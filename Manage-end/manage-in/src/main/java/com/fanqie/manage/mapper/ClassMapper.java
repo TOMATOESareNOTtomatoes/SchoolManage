@@ -2,6 +2,8 @@ package com.fanqie.manage.mapper;
 
 import com.fanqie.manage.entity.Class;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
 /**
  * <p>
@@ -11,6 +13,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author fq
  * @since 2023-03-30
  */
+@Mapper
+@Repository
 public interface ClassMapper extends BaseMapper<Class> {
 
 }

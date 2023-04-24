@@ -19,5 +19,4 @@ public class acSure {
     private int isWeekend;
     private String teachName;
     private String classNames;
-
 }

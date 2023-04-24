@@ -128,4 +128,9 @@ public class PrivilegesUserServiceImpl extends ServiceImpl<PrivilegesUserMapper,
         }
         return privilegesUser.getPrivilegesId();
     }
+
+    @Override
+    public String getPrivilegesById(String id) {
+        return null;
+    }
 }

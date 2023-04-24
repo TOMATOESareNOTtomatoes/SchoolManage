@@ -165,7 +165,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         String token = JwtUtils.getJwtToken(userId, userP);
 
-        return R.ok().data("token", token).data("url", "/home");
+//        todo:将用户数据封装成对象返回。其实可以直接返回对象的，可是这样信息太多，先这样吧。
+        return R.ok().data("token", token).data("url", "/home").data("userName",user1.getUserName())
+                .data("userId",user1.getUserId()).data("faculty",user1.getFaculty());
     }
 
     /**

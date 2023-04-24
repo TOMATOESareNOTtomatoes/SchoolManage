@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.R;
 import com.fanqie.commonutils.utils.UUIDStringUtils;
+import com.fanqie.notice.client.privilegesUserClient;
 import com.fanqie.notice.entity.Announcement;
 import com.fanqie.notice.entity.AnnouncementUser;
 import com.fanqie.notice.mapper.AnnouncementMapper;
@@ -35,11 +36,16 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
     @Autowired
     private AnnouncementUserService announcementUserService;
 
+    @Autowired
+    private privilegesUserClient privilegesUserClientService;//这个命名不太准确的，因为我没有严格安装微服务分开多个微服务去实现
+
     // 创建 PrivilegesUserServiceImpl 类的实例
-//PrivilegesUserServiceImpl privilegesUserService = new PrivilegesUserServiceImpl();
+    //PrivilegesUserServiceImpl privilegesUserService = new PrivilegesUserServiceImpl();
 
     /**
      * 添加公告
+     * 根据用户权限来判断是发布全体的，还是发布院系的。
+     * <p>
      * 查看是否需要确认，需要，在另一个表新建记录
      * 然后添加 记录
      *
@@ -49,18 +55,18 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
     @Override
     public R addAnnouncement(Announcement announcement) {
         Announcement announcement1 = new Announcement();
-        if (announcement.getIsNeedSure() == 0) {
-            //需要确认
-            if (announcement.getIsAll() == 0) {
-                //全体
-                //TODO:全体添加记录，算了，换一种方式
+            //根据用户权限决定用户发布的 是全体还是 院系
+            String sPrivileges = privilegesUserClientService.getPrivilegesById(announcement.getUserId());
+            if (sPrivileges.equals("2")) {
+                //管理员。全体
                 announcement1.setFaculty("null");
+                announcement1.setIsAll(0);
                 System.out.println("发布了需要全体确认的通知！");
             } else {
+                announcement1.setIsAll(1);
                 announcement1.setFaculty(announcement.getFaculty());
                 System.out.println("发布了需要院系确认的通知");
             }
-        }
 
         String id = UUIDStringUtils.randomUUID();
 
@@ -69,8 +75,9 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         announcement1.setContent(announcement.getContent());
         announcement1.setUserId(announcement.getUserId());
         announcement1.setUserName(announcement.getUserName());
-        announcement1.setIsAll(announcement.getIsAll());
+
         announcement1.setIsNeedSure(announcement.getIsNeedSure());
+
         announcement1.setPushTime(new Date());//TODO:时间实现用户指定，发布的时间
 
         announcement1.setIsCancel(0);//TODO:应该用注解实现的，现在先写上

@@ -45,5 +45,10 @@
         WHERE ac.is_sure = 0;
     </select>
 
+    <update id="updateIsSureByAdditionalId">
+        UPDATE additional_coefficients
+        SET is_sure=#{i}
+        WHERE additional_id = #{additionalId}
+    </update>
 
 </mapper>

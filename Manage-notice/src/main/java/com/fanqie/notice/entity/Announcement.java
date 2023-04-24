@@ -66,7 +66,7 @@ public class Announcement implements Serializable {
     private Date pushTime;
 
     /**
-     * 是否撤回，0有效；1撤回
+     * 是否撤回，0已发布；1待发布；2撤销
      */
     private Integer isCancel;
 

@@ -1,8 +1,11 @@
 package com.fanqie.manage.controller;
 
 
+import com.fanqie.commonutils.utils.R;
+import com.fanqie.manage.service.MainOutService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -16,6 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/manage/main-out")
 public class MainOutController {
+
+    @Autowired
+    MainOutService service;
+
+    /**
+     * 返回所有已确认的用户工作量信息。
+     * @return
+     */
+    @GetMapping("AllUser")
+    public R AllUser(){
+        return service.AllUser();
+    }
 
 }
 
