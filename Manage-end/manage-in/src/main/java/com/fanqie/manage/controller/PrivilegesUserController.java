@@ -41,11 +41,11 @@ public class PrivilegesUserController {
     /**
      * 通过用户的 id，返回用户的 权限
      * @param id
-     * @return
+     * @return 不是统一结果封装类，需要看到时候优化吧。
      */
     @PostMapping("getPrivilegesById")
     public String getPrivilegesById(String id){
-            return userService.getPrivilegesById(id);
+            return userService.getPrivilegesByUserId(id);
     }
 
 }

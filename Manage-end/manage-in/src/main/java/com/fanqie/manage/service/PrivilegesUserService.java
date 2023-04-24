@@ -22,9 +22,7 @@ public interface PrivilegesUserService extends IService<PrivilegesUser> {
     boolean Update(PrivilegesUser privilegesUser);
 
     boolean checkPermissionForUser(String token, PermissionEnum[] permissionEnums);
-
+    //通过用户的id 返回用户的 权限
     String getPrivilegesByUserId(String userId);
 
-    //通过用户的id 返回用户的 权限
-    String getPrivilegesById(String id);
 }

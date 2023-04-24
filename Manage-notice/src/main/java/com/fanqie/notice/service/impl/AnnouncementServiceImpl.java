@@ -55,18 +55,18 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
     @Override
     public R addAnnouncement(Announcement announcement) {
         Announcement announcement1 = new Announcement();
-            //根据用户权限决定用户发布的 是全体还是 院系
-            String sPrivileges = privilegesUserClientService.getPrivilegesById(announcement.getUserId());
-            if (sPrivileges.equals("2")) {
-                //管理员。全体
-                announcement1.setFaculty("null");
-                announcement1.setIsAll(0);
-                System.out.println("发布了需要全体确认的通知！");
-            } else {
-                announcement1.setIsAll(1);
-                announcement1.setFaculty(announcement.getFaculty());
-                System.out.println("发布了需要院系确认的通知");
-            }
+        //根据用户权限决定用户发布的 是全体还是 院系
+        String sPrivileges = privilegesUserClientService.getPrivilegesById(announcement.getUserId());
+        if (sPrivileges.equals("2")) {
+            //管理员。全体
+            announcement1.setFaculty("null");
+            announcement1.setIsAll(0);
+            System.out.println("发布了需要全体确认的通知！");
+        } else {
+            announcement1.setIsAll(1);
+            announcement1.setFaculty(announcement.getFaculty());
+            System.out.println("发布了需要院系确认的通知");
+        }
 
         String id = UUIDStringUtils.randomUUID();
 
@@ -115,8 +115,19 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
 
     @Override
     public R deleteAnnouncement(Announcement announcement) {
-
-        return null;
+        QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("announcement_id", announcement.getAnnouncementId())
+                .eq("is_delete", 0);
+        Announcement announcementResult = mapper.selectOne(queryWrapper);
+        if (announcementResult == null) {
+            return R.error().message("公告不存在或已被删除！");
+        }
+        announcementResult.setIsDelete(1);
+        int i = mapper.updateById(announcementResult);
+        if (i == 1) {
+            return R.ok().message("成功删除公告！");
+        }
+        return R.error().message("删除公告失败！");
     }
 
     /**
@@ -183,5 +194,21 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
             return R.ok().message("没有公告！！！！！！");
         }
         return R.ok().data("announcements", announcements);
+    }
+
+    /**
+     * 跟新公告信息。
+     *
+     * @param announcement
+     * @return
+     */
+    @Override
+    public R upDateByAnnouncementId(Announcement announcement) {
+        int rows = mapper.upDateByAnnouncementId(announcement);
+        if (rows == 1) {
+            return R.ok().message("公告信息更新成功");
+        } else {
+            return R.error().message("公告信息更新失败");
+        }
     }
 }

@@ -26,4 +26,6 @@ public interface AnnouncementService extends IService<Announcement> {
     R SureAnnouncement(Announcement announcement);
 
     R myAnnouncements(UserCheckParam userCheckParam);
+
+    R upDateByAnnouncementId(Announcement announcement);
 }

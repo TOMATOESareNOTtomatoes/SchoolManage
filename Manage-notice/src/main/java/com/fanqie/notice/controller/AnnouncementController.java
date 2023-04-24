@@ -10,7 +10,10 @@ import com.fanqie.notice.service.AnnouncementService;
 import lombok.extern.log4j.Log4j;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
@@ -52,16 +55,6 @@ public class AnnouncementController {
     }
 
     /**
-     * 撤销公告
-     * @param announcement
-     * @return
-     */
-    @Delete("deleteAnnouncement")
-    public R deleteAnnouncement(@RequestBody Announcement announcement){
-        return service.deleteAnnouncement(announcement);
-    }
-
-    /**
      * 查看是否需要确认，接口调用，这创建了记录
      * @param announcement
      * @return
@@ -90,9 +83,26 @@ public class AnnouncementController {
     public R myAnnouncements(@RequestBody UserCheckParam userCheckParam){
         return service.myAnnouncements(userCheckParam);
     }
-    //TODO：返回未确认公告名单等等   撤销公告，
 
+    /**
+     *  删除 公告
+     * @param announcement
+     * @return
+     */
+    @Delete("deleteAnnouncement")
+    public R deleteAnnouncement(@RequestBody Announcement announcement){
+        return service.deleteAnnouncement(announcement);
+    }
 
+    /**
+     * 更新公告 包括撤销，
+     * @param announcement
+     * @return
+     */
+    @PostMapping("upAnnouncement")
+    public R upAnnouncement(@RequestBody Announcement announcement){
+        return service.upDateByAnnouncementId(announcement);
+    }
 
 
 }
