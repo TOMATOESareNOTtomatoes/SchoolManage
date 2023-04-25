@@ -37,7 +37,7 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
     }
 
     /**
-     * 添加记录
+     * 添加 特殊情况 记录
      *
      * @param ac
      * @return
@@ -59,7 +59,7 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
         return mapper.getAdditionalSure();
     }
 
-    //跟新 院系确认
+    //跟新 院系 确认 通过特殊情况
     @Override
     public int updateIsSureByAdditionalId(String additionalId) {
         //根据唯一id，查看是否存在记录，
@@ -68,6 +68,7 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
         queryWrapper.eq("additional_id", additionalId)
                 .eq("is_delete", 0);
         long count = mapper.selectCount(queryWrapper);
+        System.out.println("count:" + count);
         if (count > 0) {
             return mapper.updateIsSureByAdditionalId(additionalId);
         } else {

@@ -13,10 +13,10 @@ import lombok.experimental.Accessors;
 public class acSure {
     private String userName;
     private String additionalId;
-    private int isSure;
-    private int isFirst;
-    private int isDoubleLanguage;
-    private int isWeekend;
+    private double isSure;
+    private double isFirst;
+    private double isDoubleLanguage;
+    private double isWeekend;
     private String teachName;
     private String classNames;
 }

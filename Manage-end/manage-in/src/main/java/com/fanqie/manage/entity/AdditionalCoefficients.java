@@ -1,10 +1,8 @@
 package com.fanqie.manage.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -18,8 +16,10 @@ import java.util.Date;
  * @since 2023-03-30
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
+//@EqualsAndHashCode(callSuper = false)
+//@Accessors(chain = true)
+@AllArgsConstructor
+@TableName("additional_coefficients")
 public class AdditionalCoefficients implements Serializable {
 
     private static final long serialVersionUID=1L;
@@ -58,16 +58,20 @@ public class AdditionalCoefficients implements Serializable {
     /**
      * 逻辑删除；0表示未删除；1表示删除
      */
+    @TableLogic
+    @TableField(value = "is_delete",fill = FieldFill.INSERT)
     private Integer isDelete;
 
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date gmtCreate;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.UPDATE)
     private Date gmtModified;
 
     public AdditionalCoefficients(int IsFirst, int IsDoubleLanguage, int IsWeekend) {

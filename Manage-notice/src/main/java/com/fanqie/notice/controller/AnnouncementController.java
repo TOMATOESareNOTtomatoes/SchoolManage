@@ -59,10 +59,10 @@ public class AnnouncementController {
      * @param announcement
      * @return
      */
-    @PostMapping("isSureAnnouncement")
-    public R isSureAnnouncement(@RequestBody Announcement announcement){
-        return service.isSureAnnouncement(announcement);
-    }
+//    @PostMapping("isSureAnnouncement")
+//    public R isSureAnnouncement(@RequestBody Announcement announcement){
+//        return service.isSureAnnouncement(announcement);
+//    }
 
     /**
      * 确认 公告

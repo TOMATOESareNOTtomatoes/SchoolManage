@@ -28,21 +28,26 @@
 
     <!-- 实现getAdditionalSure方法，查询未确认的additional_coefficients信息 -->
     <select id="getAdditionalSure" resultType="com.fanqie.manage.param.acSure">
-        SELECT u.user_name,
-               ac.additional_id,
-               ac.is_sure,
-               ac.is_first,
-               ac.is_double_language,
-               ac.is_weekend,
-               t.teach_name,
-               GROUP_CONCAT(c.class_name SEPARATOR '+') AS class_names
-        FROM additional_coefficients ac
-                 LEFT JOIN main m ON ac.additional_id = m.additional
-                 LEFT JOIN USER u ON m.user_id = u.user_id
-                 LEFT JOIN teach t ON m.unique_number = t.teach_id
-                 LEFT JOIN teach_class tc ON m.unique_number = tc.unique_number
-                 LEFT JOIN class c ON tc.class_id = c.class_id
-        WHERE ac.is_sure = 0;
+        SELECT
+            u.user_name,
+            ac.additional_id,
+            ac.is_sure,
+            ac.is_first,
+            ac.is_double_language,
+            ac.is_weekend,
+            t.teach_name,
+            GROUP_CONCAT(c.class_name SEPARATOR '+') AS class_names
+        FROM
+            additional_coefficients ac
+                LEFT JOIN main m ON ac.additional_id = m.additional
+                LEFT JOIN USER u ON m.user_id = u.user_id
+                LEFT JOIN teach t ON m.unique_number = t.teach_id
+                LEFT JOIN teach_class tc ON m.unique_number = tc.unique_number
+                LEFT JOIN class c ON tc.class_id = c.class_id
+        WHERE
+            ac.is_sure = 0
+        GROUP BY
+            ac.additional_id;
     </select>
 
     <update id="updateIsSureByAdditionalId" parameterType="java.lang.String">

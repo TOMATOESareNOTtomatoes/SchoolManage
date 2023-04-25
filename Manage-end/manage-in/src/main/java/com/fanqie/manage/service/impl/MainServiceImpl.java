@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -334,6 +335,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             ac.setIsDoubleLanguage(userDoInfo.getIsDoubleLanguage());
             ac.setIsWeekend(userDoInfo.getIsWeekend());
             ac.setIsSure(0);
+            ac.setIsDelete(0);
+            ac.setGmtCreate(new Date());
+            ac.setGmtCreate(new Date());
             int row = additionalCoefficientsService.addAdditional(ac);
             if (row == 1) {
                 main.setAdditional(additionalID);
@@ -424,6 +428,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     public R getAdditionalSure() {
         //查询ac表，所有未确认的记录，并联合teach表和teachClass表查询课程名称和班级信息，返回结果。
         List<acSure> ac = additionalCoefficientsService.getAdditionalSure();
+        System.out.println("返回 的数据，用户特殊情况申请："+ac);
         if (ac == null) {
             return R.error().message("不存在未确认的信息！！");
         }
@@ -434,6 +439,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R AdditionalSure(acSure ac) {
         int result = additionalCoefficientsService.updateIsSureByAdditionalId(ac.getAdditionalId());
+        System.out.println("result:"+result);
         if (result == 1) {
             return R.ok().message("成功确认特殊情况！");
         } else {

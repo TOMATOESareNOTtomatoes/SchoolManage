@@ -94,7 +94,6 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
 
     /**
      * 用户查看公告/通知
-     *
      * @param user
      * @return
      */

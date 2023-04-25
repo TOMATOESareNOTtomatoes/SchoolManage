@@ -105,26 +105,27 @@ public class MainController {
 
     /**
      * 通过教师的特殊申请
-     * @param ac
+     * @param acSure
      * @return
      */
     @PostMapping("AdditionalSure")
     @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
-    public R AdditionalSure(@RequestBody acSure ac){
-        System.out.println("同意教师的特殊申请！");
-        return mainService.AdditionalSure(ac);
+    public R AdditionalSure(@RequestBody acSure acSure){
+        System.out.println("同意教师的特殊申请！"+acSure);
+        return mainService.AdditionalSure(acSure);
     }
 
     /**
      * 不通过教师的特殊申请。
-     * @param ac
+     * @param acSure
      * @return
      */
 
     @PostMapping("AdditionalUnSure")
     @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
-    public R AdditionalUnSure(@RequestBody acSure ac){
-        return mainService.AdditionalUnSure(ac);
+    public R AdditionalUnSure(@RequestBody acSure acSure){
+        System.out.println("butongyi"+acSure);
+        return mainService.AdditionalUnSure(acSure);
     }
 //  @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
 

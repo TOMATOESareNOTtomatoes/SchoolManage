@@ -1,11 +1,14 @@
 package com.fanqie.notice.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fanqie.notice.entity.AnnouncementUser;
 import com.fanqie.notice.mapper.AnnouncementUserMapper;
 import com.fanqie.notice.service.AnnouncementUserService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -25,8 +28,17 @@ public class AnnouncementUserServiceImpl extends ServiceImpl<AnnouncementUserMap
         return mapper.selectOneByIdId(announcementId,userId);
     }
 
+    /**
+     * 用户确认公告信息。
+     * @param announcementId
+     * @param userId
+     * @return
+     */
     @Override
     public int updateByIdId(String announcementId, String userId) {
-        return mapper.updateByIdId(announcementId,userId);
+        Map<String, Object> params = new HashMap<>();
+        params.put("announcementId", announcementId);
+        params.put("userId", userId);
+        return mapper.updateByIdId(params);
     }
 }
