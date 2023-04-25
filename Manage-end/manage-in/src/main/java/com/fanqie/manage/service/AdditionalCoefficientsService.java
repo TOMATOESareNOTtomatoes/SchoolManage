@@ -26,5 +26,9 @@ public interface AdditionalCoefficientsService extends IService<AdditionalCoeffi
 
     List<acSure> getAdditionalSure();
 
-    int updateIsSureByAdditionalId(String additionalId, int i);
+    //通过的
+    int updateIsSureByAdditionalId(String additionalId);
+
+    //不通过的
+    int updateNoSureByAdditionalId(String additionalId);
 }

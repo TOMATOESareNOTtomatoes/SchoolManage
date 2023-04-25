@@ -108,9 +108,10 @@ public class MainController {
      * @param ac
      * @return
      */
-    @PatchMapping("AdditionalSure")
+    @PostMapping("AdditionalSure")
     @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
     public R AdditionalSure(@RequestBody acSure ac){
+        System.out.println("同意教师的特殊申请！");
         return mainService.AdditionalSure(ac);
     }
 

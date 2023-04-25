@@ -45,9 +45,15 @@
         WHERE ac.is_sure = 0;
     </select>
 
-    <update id="updateIsSureByAdditionalId">
+    <update id="updateIsSureByAdditionalId" parameterType="java.lang.String">
         UPDATE additional_coefficients
-        SET is_sure=#{i}
+        SET is_sure = 1
+        WHERE additional_id = #{additionalId}
+    </update>
+
+        <update id="updateUnSureByAdditionalId" parameterType="java.lang.String">
+        UPDATE additional_coefficients
+        SET is_sure = 2
         WHERE additional_id = #{additionalId}
     </update>
 

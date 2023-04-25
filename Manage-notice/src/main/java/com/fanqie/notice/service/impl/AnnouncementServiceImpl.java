@@ -9,12 +9,14 @@ import com.fanqie.notice.client.privilegesUserClient;
 import com.fanqie.notice.entity.Announcement;
 import com.fanqie.notice.entity.AnnouncementUser;
 import com.fanqie.notice.mapper.AnnouncementMapper;
+import com.fanqie.notice.param.announcementsAddSure;
 import com.fanqie.notice.service.AnnouncementService;
 import com.fanqie.notice.service.AnnouncementUserService;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -106,31 +108,40 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
                 .eq("is_delete", 0)
                 .orderByDesc("push_time");
         List<Announcement> announcements = mapper.selectList(queryWrapper);
-
         if (announcements.isEmpty()) {
             return R.ok().message("没有公告！！！！！！");
         }
-        return R.ok().data("announcements", announcements);
-    }
-
-    @Override
-    public R deleteAnnouncement(Announcement announcement) {
-        QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("announcement_id", announcement.getAnnouncementId())
-                .eq("is_delete", 0);
-        Announcement announcementResult = mapper.selectOne(queryWrapper);
-        if (announcementResult == null) {
-            return R.error().message("公告不存在或已被删除！");
+        List<announcementsAddSure> aas = new ArrayList<>();
+        //遍历封装返回结果类
+        for (Announcement a : announcements) {
+            announcementsAddSure addSure = new announcementsAddSure(a);
+            if (a.getIsNeedSure() == 0) {
+                //需要确认的公告。查询是否已经确认。
+                AnnouncementUser announcementUse = announcementUserService.getOneByIdId(a.getAnnouncementId(), user.getUserId());
+                if (announcementUse == null) {
+                    //AnnouncementUse表没有记录，则创建记录，将确认值设置为未确认
+                    AnnouncementUser newAnnouncementUse = new AnnouncementUser();
+                    newAnnouncementUse.setAnnouncementId(a.getAnnouncementId());
+                    newAnnouncementUse.setUserId(user.getUserId());
+                    newAnnouncementUse.setIsSure(0);//0表示未确认  1表示确认了
+                    if (announcementUserService.save(newAnnouncementUse)) {
+                        addSure.setHadSure(0);//表示未确认
+                    } else {
+                        System.out.println("添加确认记录失败");
+                        continue;
+                    }
+                }//说明存在记录
+                else {
+                    addSure.setHadSure(announcementUse.getIsSure());
+                }
+            }
+            aas.add(addSure);
         }
-        announcementResult.setIsDelete(1);
-        int i = mapper.updateById(announcementResult);
-        if (i == 1) {
-            return R.ok().message("成功删除公告！");
-        }
-        return R.error().message("删除公告失败！");
+        return R.ok().data("announcementsAddSure", aas);
     }
 
     /**
+     * 被上面这个给合并了。
      * 查看是否需要确认
      * 通过announcement查看是否需要确认，需要：查看announcementUser是否有记录，没有则创建。
      *
@@ -168,6 +179,37 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         return R.error().message("该公告不需要确认！！");
     }
 
+
+    /**
+     * 删除公告
+     *
+     * @param announcement
+     * @return
+     */
+    @Override
+    public R deleteAnnouncement(Announcement announcement) {
+        QueryWrapper<Announcement> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("announcement_id", announcement.getAnnouncementId())
+                .eq("is_delete", 0);
+        Announcement announcementResult = mapper.selectOne(queryWrapper);
+        if (announcementResult == null) {
+            return R.error().message("公告不存在或已被删除！");
+        }
+        announcementResult.setIsDelete(1);
+        int i = mapper.updateById(announcementResult);
+        if (i == 1) {
+            return R.ok().message("成功删除公告！");
+        }
+        return R.error().message("删除公告失败！");
+    }
+
+
+    /**
+     * 用户确认公告
+     *
+     * @param announcement
+     * @return
+     */
     @Override
     public R SureAnnouncement(Announcement announcement) {
         int i = announcementUserService.updateByIdId(announcement.getAnnouncementId(), announcement.getUserId());
@@ -197,7 +239,7 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
     }
 
     /**
-     * 跟新公告信息。
+     * 更新公告信息。
      *
      * @param announcement
      * @return

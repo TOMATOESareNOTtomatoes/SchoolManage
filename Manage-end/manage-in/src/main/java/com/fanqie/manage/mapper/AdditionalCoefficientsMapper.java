@@ -26,5 +26,8 @@ public interface AdditionalCoefficientsMapper extends BaseMapper<AdditionalCoeff
 
     List<acSure> getAdditionalSure();
 
-    int updateIsSureByAdditionalId(String additionalId, int i);
+    //通过的
+    int updateIsSureByAdditionalId(String additionalId);
+    //不通过 的
+    int updateUnSureByAdditionalId(String additionalId);
 }

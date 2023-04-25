@@ -59,18 +59,31 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
         return mapper.getAdditionalSure();
     }
 
-    //跟新院系确认
+    //跟新 院系确认
     @Override
-    public int updateIsSureByAdditionalId(String additionalId, int i) {
+    public int updateIsSureByAdditionalId(String additionalId) {
         //根据唯一id，查看是否存在记录，
         //根据参数addition查看表里是否有记录，而且没有被逻辑删除
         QueryWrapper<AdditionalCoefficients> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("additional_id", additionalId).eq("is_delete", 0);
+        queryWrapper.eq("additional_id", additionalId)
+                .eq("is_delete", 0);
         long count = mapper.selectCount(queryWrapper);
         if (count > 0) {
-            //存在记录
-            //根据参数additionId，将表里的is_sure属性更改为参数i
-            return mapper.updateIsSureByAdditionalId(additionalId, i);
+            return mapper.updateIsSureByAdditionalId(additionalId);
+        } else {
+            return 0;
+        }
+    }
+
+    //不通过的
+    @Override
+    public int updateNoSureByAdditionalId(String additionalId) {
+        QueryWrapper<AdditionalCoefficients> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("additional_id", additionalId)
+                .eq("is_delete", 0);
+        long count = mapper.selectCount(queryWrapper);
+        if (count > 0) {
+            return mapper.updateUnSureByAdditionalId(additionalId);
         } else {
             return 0;
         }

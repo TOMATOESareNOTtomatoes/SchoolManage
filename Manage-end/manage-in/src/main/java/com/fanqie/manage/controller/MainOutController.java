@@ -25,6 +25,7 @@ public class MainOutController {
 
     /**
      * 返回所有已确认的用户工作量信息。
+     * 搞个  名字  单位  工作量
      * @return
      */
     @GetMapping("AllUser")

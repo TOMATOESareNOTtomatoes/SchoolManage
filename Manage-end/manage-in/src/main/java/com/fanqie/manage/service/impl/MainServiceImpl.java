@@ -433,7 +433,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     //确认用户特殊情况的接口
     @Override
     public R AdditionalSure(acSure ac) {
-        int result = additionalCoefficientsService.updateIsSureByAdditionalId(ac.getAdditionalId(), 1);
+        int result = additionalCoefficientsService.updateIsSureByAdditionalId(ac.getAdditionalId());
         if (result == 1) {
             return R.ok().message("成功确认特殊情况！");
         } else {
@@ -444,7 +444,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     //否认用户特殊情况的接口
     @Override
     public R AdditionalUnSure(acSure ac) {
-        int result = additionalCoefficientsService.updateIsSureByAdditionalId(ac.getAdditionalId(), 2);
+        int result = additionalCoefficientsService.updateNoSureByAdditionalId(ac.getAdditionalId());
         if (result == 1) {
             return R.ok().message("成功确认特殊情况！");
         } else {
