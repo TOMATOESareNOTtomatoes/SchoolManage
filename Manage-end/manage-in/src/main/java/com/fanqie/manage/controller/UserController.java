@@ -41,8 +41,10 @@ public class UserController {
 
     @GetMapping("logout")
     public R logout(HttpServletRequest request) {
-
-        return service.logout();
+        //清理Session中保存的当前登录员工的id
+        request.getSession().removeAttribute("token");
+        return R.ok().message("退出登录成功！");
+        //return service.logout();
     }
 
     /**

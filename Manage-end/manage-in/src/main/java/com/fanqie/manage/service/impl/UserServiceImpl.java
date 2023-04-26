@@ -44,7 +44,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public R logout() {
-
         return null;
     }
 
@@ -81,7 +80,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserId(userinfo.getUserId());
         user.setUserName(userinfo.getUserName());
         user.setFaculty(userinfo.getFaculty());
-        user.setPassword(userinfo.getPassword());
+        String newPwd = MD5Util.encode(userinfo.getPassword() + UserConstants.USER_SLAT);
+        //密码加密存储
+        user.setPassword(newPwd);
         user.setNumber(userinfo.getNumber());
 
         //根据用户的权限名，查询对应权限的id
