@@ -8,12 +8,8 @@ import com.fanqie.commonutils.utils.R;
 import com.fanqie.notice.entity.Announcement;
 import com.fanqie.notice.service.AnnouncementService;
 import lombok.extern.log4j.Log4j;
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -80,6 +76,7 @@ public class AnnouncementController {
      * @return
      */
     @PostMapping("myAnnouncements")
+    @Permission({PermissionEnum.UserPlus,PermissionEnum.ADMIN})
     public R myAnnouncements(@RequestBody UserCheckParam userCheckParam){
         return service.myAnnouncements(userCheckParam);
     }
@@ -89,21 +86,22 @@ public class AnnouncementController {
      * @param announcement
      * @return
      */
-    @Delete("deleteAnnouncement")
+    @DeleteMapping("deleteAnnouncement")
     public R deleteAnnouncement(@RequestBody Announcement announcement){
+        System.out.println("公告 删除！"+announcement);
         return service.deleteAnnouncement(announcement);
     }
 
     /**
-     * 更新公告 包括撤销，
+     * 更新公告 包括 撤销，发布。todo：撤销和发布应该再写一个方法的。
      * @param announcement
      * @return
      */
     @PostMapping("upAnnouncement")
     public R upAnnouncement(@RequestBody Announcement announcement){
+        System.out.println("公告修改！"+announcement);
         return service.upDateByAnnouncementId(announcement);
     }
-
 
 }
 

@@ -4,10 +4,7 @@ package com.fanqie.manage.controller;
 import com.fanqie.commonutils.utils.R;
 import com.fanqie.manage.service.PrivilegesUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,8 +40,9 @@ public class PrivilegesUserController {
      * @param id
      * @return 不是统一结果封装类，需要看到时候优化吧。
      */
-    @PostMapping("getPrivilegesById")
-    public String getPrivilegesById(String id){
+    @PostMapping("getPrivilegesById/{id}")
+    public String getPrivilegesById(@PathVariable("id") String id){
+        System.out.println("请求用户权限成功！通过用户的Id");
             return userService.getPrivilegesByUserId(id);
     }
 

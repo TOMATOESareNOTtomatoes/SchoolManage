@@ -59,15 +59,18 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         Announcement announcement1 = new Announcement();
         //根据用户权限决定用户发布的 是全体还是 院系
         String sPrivileges = privilegesUserClientService.getPrivilegesById(announcement.getUserId());
+        if(sPrivileges==null){
+            return R.error().message("用户权限等级信息获取失败！");
+        }
         if (sPrivileges.equals("2")) {
             //管理员。全体
             announcement1.setFaculty("null");
             announcement1.setIsAll(0);
-            System.out.println("发布了需要全体确认的通知！");
+            System.out.println("发布了全体通知！");
         } else {
             announcement1.setIsAll(1);
             announcement1.setFaculty(announcement.getFaculty());
-            System.out.println("发布了需要院系确认的通知");
+            System.out.println("发布了院系的通知");
         }
 
         String id = UUIDStringUtils.randomUUID();
@@ -77,13 +80,13 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
         announcement1.setContent(announcement.getContent());
         announcement1.setUserId(announcement.getUserId());
         announcement1.setUserName(announcement.getUserName());
-
+        announcement1.setIsCancel(announcement.getIsCancel());
         announcement1.setIsNeedSure(announcement.getIsNeedSure());
 
         announcement1.setPushTime(new Date());//TODO:时间实现用户指定，发布的时间
 
-        announcement1.setIsCancel(0);//TODO:应该用注解实现的，现在先写上
-        announcement1.setIsDelete(0);
+
+        announcement1.setIsDelete(0);//TODO:应该用注解实现的，现在先写上
 
         int i = mapper.insert(announcement1);
         if (i == 1) {

@@ -14,7 +14,7 @@ public class LoginListener implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new TokenInterceptor())
                 .excludePathPatterns("/**/login") // 登录页面不需要检查 token
-                //.excludePathPatterns("/manage/**") // 測試不帶 token
+                .excludePathPatterns("/manage/privileges-user/**") // 測試不帶 token
                 .addPathPatterns("/**"); //
     }
 }

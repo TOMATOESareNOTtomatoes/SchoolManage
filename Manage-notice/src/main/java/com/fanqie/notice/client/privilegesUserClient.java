@@ -1,7 +1,9 @@
 package com.fanqie.notice.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 //todo： 优化空间，换一种实现方式，这个是简单的，还有一种是api统一导包实现的。
 
@@ -12,8 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
  *
  */
 @FeignClient("manage-service")
+@Component
 public interface privilegesUserClient {
 
-    @RequestMapping("/manage/privileges-user/getPrivilegesById")
-    public String getPrivilegesById(String id);
+    @PostMapping("/manage/privileges-user/getPrivilegesById/{id}")
+    public String getPrivilegesById(@PathVariable("id") String id);
 }

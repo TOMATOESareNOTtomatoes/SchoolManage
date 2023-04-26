@@ -25,7 +25,7 @@ public class TokenInterceptor implements HandlerInterceptor {
             System.out.println("token为空");
             return false;
         }
-//TODO：跳转问题
+//TODO：*********跳转问题
         if (JwtUtils.isTokenExpired(token)) {//判断是否过期
             System.out.println("token过期了");
             response.setHeader("Access-Control-Allow-Origin", "");

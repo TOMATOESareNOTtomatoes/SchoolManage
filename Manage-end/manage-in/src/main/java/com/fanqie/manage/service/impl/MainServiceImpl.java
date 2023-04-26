@@ -104,6 +104,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             view.setSpecial("无");
             if (view.getAdditional() != null) {
                 ac = additionalCoefficientsService.getByAdditionalId(view.getAdditional());
+                if(ac!=null){
                 String sSpecial="";
                 if(ac.getIsFirst()==0.1){
                     sSpecial+="第一次授课；";
@@ -115,6 +116,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     sSpecial+="周末上课；";
                 }
                 view.setSpecial(sSpecial);
+                }else {
+                   ac=new AdditionalCoefficients(0,1,1);
+                }
             }
 
             double dou = 0;//保存工作量的过程量
