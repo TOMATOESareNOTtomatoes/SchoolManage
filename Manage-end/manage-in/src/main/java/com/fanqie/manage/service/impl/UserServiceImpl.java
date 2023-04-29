@@ -58,7 +58,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public R getUserList() {
         List<userInfo> userList = userMapper.getUserList();
-        //todo:可以手写sql语句，而不是后台将密码制空
+        //todo:***可以手写sql语句，而不是后台将密码制空
         for (userInfo user : userList) {
             //System.out.println("用户姓名：" + user.getUserName());
             user.setPassword(null);

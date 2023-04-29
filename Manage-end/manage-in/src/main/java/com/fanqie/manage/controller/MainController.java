@@ -129,6 +129,10 @@ public class MainController {
     }
 //  @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
 
+    /**
+     * todo：加个教师课程信息错误提交，搞个简单的统计结果表，就是全部教职工的工作量情况（只有名字、院系、总工作量）三个属性。
+     * todo：1、教务处同意后，回复用户特定的通知、2修改某一教师的课程信息，课时等等。3、（这个感觉必要）管理员可以修改课程的系数
+     */
 
 }
 
