@@ -57,5 +57,16 @@ public class AdditionalMainServiceImpl extends ServiceImpl<AdditionalMainMapper,
         return mapper.getAdditionalSure();
     }
 
+    /**
+     * 通过院系，查询对应的特殊情况确认列表
+     *
+     * @param faculty
+     * @return 特殊情况列表
+     */
+    @Override
+    public List<acSure> getByFaculty(String faculty) {
+        return mapper.getAdditionalSureByFaculty(faculty);
+    }
+
 
 }

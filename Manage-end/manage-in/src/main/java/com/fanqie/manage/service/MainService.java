@@ -1,6 +1,7 @@
 package com.fanqie.manage.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.R;
 import com.fanqie.manage.entity.Main;
 import com.fanqie.manage.param.acSure;
@@ -49,6 +50,13 @@ public interface MainService extends IService<Main> {
     R AdditionalSureA(acSure acSure);
 
     R AdditionalUnSureA(acSure acSure);
+
+    /**
+     * 获取教师特殊情况  院长的
+     * @param userCheckParam
+     * @return
+     */
+    R getAdditionalListByF(UserCheckParam userCheckParam);
 }
 
 

@@ -24,8 +24,15 @@ public interface AdditionalMainService extends IService<AdditionalMain> {
     AdditionalMain getByAdditionalId(String additional);
 
     /**
-     * 返回院长确认的特殊情况列表  is_sure值为 1
+     * 返回  管理员  确认的特殊情况列表  is_sure值为 1
      * @return
      */
     List<acSure> getAdditionalSure();
+
+    /**
+     * 通过院系，查询对应的特殊情况确认列表
+     * @param faculty
+     * @return  特殊情况列表
+     */
+    List<acSure> getByFaculty(String faculty);
 }

@@ -90,6 +90,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String privilegesId = privilegesService.getPrivilegesIdByName(userinfo.getPermissions());
         System.out.println("权限id："+privilegesId);
         if (privilegesId == null) {
+            //说明用户没有登录过，没有权限信息。
             return R.error().message("用户权限信息查询出错");
         }
         PrivilegesUser privilegesUser = new PrivilegesUser();
@@ -160,7 +161,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user1 = userMapper.selectOne(queryWrapper);
         //token带上用户权限
         String userP = privilegesUserService.getPrivilegesByUserId(userId);
-
         if (user1 == null) {
             return R.error().message("账号或者密码错误");
         }

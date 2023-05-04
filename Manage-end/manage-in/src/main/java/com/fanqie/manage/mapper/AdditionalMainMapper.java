@@ -21,5 +21,11 @@ import java.util.List;
 public interface AdditionalMainMapper extends BaseMapper<AdditionalMain> {
 
     List<acSure> getAdditionalSure();
-    
+
+    /**
+     * 查询特殊情况列表，通过院系
+     * @param faculty
+     * @return
+     */
+    List<acSure> getAdditionalSureByFaculty(String faculty);
 }

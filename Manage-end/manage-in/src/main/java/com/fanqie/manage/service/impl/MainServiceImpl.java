@@ -2,6 +2,7 @@ package com.fanqie.manage.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.R;
 import com.fanqie.commonutils.utils.UUIDStringUtils;
 import com.fanqie.manage.entity.*;
@@ -494,5 +495,21 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R AdditionalUnSureA(acSure acSure) {
         return R.ok().message("接口正常");
+    }
+
+    /**
+     * 获取教师特殊情况  院长的
+     *      处理流程，查询待确认的特殊情况信息
+     *      isSure = 1
+     * @param userCheckParam
+     * @return
+     */
+    @Override
+    public R getAdditionalListByF(UserCheckParam userCheckParam) {
+        List<acSure> acSureList = additionalMainService.getByFaculty(userCheckParam.getFaculty());
+        if(acSureList.isEmpty()){
+            return R.ok().message("不存在未确认的申请！！");
+        }
+        return R.ok().data("AdditionalSure",acSureList);
     }
 }

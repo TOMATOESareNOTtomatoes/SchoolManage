@@ -1,5 +1,6 @@
 package com.fanqie.manage.controller;
 
+import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.Permission;
 import com.fanqie.commonutils.utils.PermissionEnum;
 import com.fanqie.commonutils.utils.R;
@@ -77,7 +78,6 @@ public class MainController {
      */
     @PostMapping("addAdditional")
     public R addAdditional(@RequestBody userDoInfo userDoInfo) {
-        //TODO:数据校验。
         System.out.println("特殊情况参数："+userDoInfo.toString());
         return mainService.addAdditional(userDoInfo);
     }
@@ -100,6 +100,16 @@ public class MainController {
     @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
     public R getAdditionalSure(){
         return mainService.getAdditionalSure();
+    }
+
+    /**
+     * 院长确认特殊情况
+     * @return 未确认的特殊情况申请列表
+     */
+    @PostMapping("getAdditionalListByF")
+    @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
+    public R getAdditionalListByF(@RequestBody UserCheckParam userCheckParam){
+        return mainService.getAdditionalListByF(userCheckParam);
     }
 
     /**
