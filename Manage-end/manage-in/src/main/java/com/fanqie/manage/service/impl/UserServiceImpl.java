@@ -80,6 +80,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserId(userinfo.getUserId());
         user.setUserName(userinfo.getUserName());
         user.setFaculty(userinfo.getFaculty());
+        System.out.println("新密码："+userinfo.getPassword());
+
         String newPwd = MD5Util.encode(userinfo.getPassword() + UserConstants.USER_SLAT);
         //密码加密存储
         user.setPassword(newPwd);

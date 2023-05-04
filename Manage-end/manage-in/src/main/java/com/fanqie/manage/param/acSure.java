@@ -13,7 +13,9 @@ import lombok.experimental.Accessors;
 public class acSure {
     private String userName;
     private String additionalId;
+
     private double isSure;
+
     private double isFirst;
     private double isDoubleLanguage;
     private double isWeekend;

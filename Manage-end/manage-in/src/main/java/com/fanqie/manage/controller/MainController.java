@@ -7,6 +7,7 @@ import com.fanqie.commonutils.utils.R;
 import com.fanqie.manage.entity.Main;
 import com.fanqie.manage.entity.User;
 import com.fanqie.manage.param.acSure;
+import com.fanqie.manage.param.soleAndUser;
 import com.fanqie.manage.param.userDoInfo;
 import com.fanqie.manage.service.MainService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +94,7 @@ public class MainController {
     }
 
     /**
-     * 用来给教务处人员确认教师特殊情况申请的。  todo：要修改了，按照院系为参数提供结果。
+     *  管理员  特殊情况申请表
      * @return 未确认的特殊情况申请列表
      */
     @GetMapping("getAdditionalSure")
@@ -103,7 +104,7 @@ public class MainController {
     }
 
     /**
-     * 院长确认特殊情况
+     * 院长   特殊情况申请表
      * @return 未确认的特殊情况申请列表
      */
     @PostMapping("getAdditionalListByF")
@@ -113,15 +114,15 @@ public class MainController {
     }
 
     /**
-     * 通过教师的特殊申请
-     * @param acSure
+     *   院长  通过   教师的特殊申请
+     * @param soleAndUser
      * @return
      */
     @PostMapping("AdditionalSure")
     @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
-    public R AdditionalSure(@RequestBody acSure acSure){
-        System.out.println("同意教师的特殊申请！"+acSure);
-        return mainService.AdditionalSure(acSure);
+    public R AdditionalSure(@RequestBody soleAndUser soleAndUser){
+        System.out.println("同意教师的特殊申请！"+soleAndUser);
+        return mainService.AdditionalSure(soleAndUser);
     }
 
     /**

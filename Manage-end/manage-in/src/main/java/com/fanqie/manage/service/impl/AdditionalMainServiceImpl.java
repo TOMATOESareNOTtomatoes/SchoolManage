@@ -1,10 +1,12 @@
 package com.fanqie.manage.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fanqie.manage.entity.AdditionalMain;
 import com.fanqie.manage.mapper.AdditionalMainMapper;
 import com.fanqie.manage.param.acSure;
+import com.fanqie.manage.param.soleAndUser;
 import com.fanqie.manage.service.AdditionalMainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,6 +68,22 @@ public class AdditionalMainServiceImpl extends ServiceImpl<AdditionalMainMapper,
     @Override
     public List<acSure> getByFaculty(String faculty) {
         return mapper.getAdditionalSureByFaculty(faculty);
+    }
+
+    /**
+     * 修改表的数据
+     *
+     * @param soleAndUser 有三个属性  id userId faculty
+     * @return 修改的数量
+     */
+    @Override
+    public int updateByAdditionalId(soleAndUser soleAndUser) {
+        int count = mapper.update(null, new UpdateWrapper<AdditionalMain>()
+                .eq("additional_id", soleAndUser.getSole())
+                .set("user_plus_id", soleAndUser.getUserId())
+                .set("is_sure", 5));
+        return count;
+
     }
 
 

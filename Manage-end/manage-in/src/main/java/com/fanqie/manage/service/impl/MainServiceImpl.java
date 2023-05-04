@@ -10,6 +10,7 @@ import com.fanqie.manage.listener.DemoDataListener;
 import com.fanqie.manage.mapper.*;
 import com.fanqie.manage.param.acSure;
 import com.fanqie.manage.param.excelDemo;
+import com.fanqie.manage.param.soleAndUser;
 import com.fanqie.manage.param.userDoInfo;
 import com.fanqie.manage.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -448,8 +449,12 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     }
 
     @Override
-    public R AdditionalSure(acSure ac) {
-        return null;
+    public R AdditionalSure(soleAndUser soleAndUser) {
+        int i = additionalMainService.updateByAdditionalId(soleAndUser);
+        if(i==1){
+            return R.ok().message("同意成功！");
+        }
+        return R.error().message("修改失败！");
     }
 
     @Override

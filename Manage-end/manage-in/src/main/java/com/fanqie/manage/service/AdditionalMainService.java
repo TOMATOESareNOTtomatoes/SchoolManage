@@ -3,6 +3,7 @@ package com.fanqie.manage.service;
 import com.fanqie.manage.entity.AdditionalMain;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fanqie.manage.param.acSure;
+import com.fanqie.manage.param.soleAndUser;
 
 import java.util.List;
 
@@ -35,4 +36,11 @@ public interface AdditionalMainService extends IService<AdditionalMain> {
      * @return  特殊情况列表
      */
     List<acSure> getByFaculty(String faculty);
+
+    /**
+     * 修改表的数据
+     * @param soleAndUser 有三个属性  id userId faculty
+     * @return 修改的数量
+     */
+    int updateByAdditionalId(soleAndUser soleAndUser);
 }

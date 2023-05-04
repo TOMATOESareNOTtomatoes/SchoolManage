@@ -5,6 +5,7 @@ import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.R;
 import com.fanqie.manage.entity.Main;
 import com.fanqie.manage.param.acSure;
+import com.fanqie.manage.param.soleAndUser;
 import com.fanqie.manage.param.userDoInfo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,7 +32,12 @@ public interface MainService extends IService<Main> {
 
     R getAdditionalSure();
 
-    R AdditionalSure(acSure ac);
+    /**
+     * 院长 同意 特殊情况
+     * @param soleAndUser
+     * @return
+     */
+    R AdditionalSure(soleAndUser soleAndUser);
 
     R AdditionalUnSure(acSure ac);
 
