@@ -33,6 +33,22 @@ public interface MainService extends IService<Main> {
     R AdditionalSure(acSure ac);
 
     R AdditionalUnSure(acSure ac);
+
+    R addMain(Main main);
+
+    R upDataByMain(Main main);
+
+    R getCExperiment();
+
+    R getCTheory();
+
+    R getCPractice();
+
+    R getAdditionalSureA();
+
+    R AdditionalSureA(acSure acSure);
+
+    R AdditionalUnSureA(acSure acSure);
 }
 
 

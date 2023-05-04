@@ -24,6 +24,7 @@ public class MainAllViewServiceImpl extends ServiceImpl<MainAllViewMapper, MainA
 
     @Autowired
     MainAllViewMapper mapper;
+
     /**
      * 查询视图全部
      *
@@ -35,13 +36,15 @@ public class MainAllViewServiceImpl extends ServiceImpl<MainAllViewMapper, MainA
 
     /**
      * 根据用户id查询用户的授课信息
+     *
      * @param userId 用户Id
      * @return
      */
     @Override
     public List<MainAllView> queryByUserId(String userId) {
         QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", userId);
+        wrapper.eq("user_id", userId)
+                .and(i -> i.isNull("is_delete").or().ne("is_delete", 1));
         return mapper.selectList(wrapper);
     }
 

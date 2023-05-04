@@ -4,12 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fanqie.manage.entity.AdditionalCoefficients;
 import com.fanqie.manage.mapper.AdditionalCoefficientsMapper;
-import com.fanqie.manage.param.acSure;
 import com.fanqie.manage.service.AdditionalCoefficientsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * <p>
@@ -26,67 +23,15 @@ public class AdditionalCoefficientsServiceImpl extends ServiceImpl<AdditionalCoe
     AdditionalCoefficientsMapper mapper;
 
     /**
-     * 通过唯一id 返回特殊情况表。
+     * 通过 acId 返回系数
      *
-     * @param additional
+     * @param additional_coefficients_id
      * @return
      */
     @Override
-    public AdditionalCoefficients getByAdditionalId(String additional) {
-        return mapper.getByAdditionalId(additional);
-    }
-
-    /**
-     * 添加 特殊情况 记录
-     *
-     * @param ac
-     * @return
-     */
-    @Override
-    public int addAdditional(AdditionalCoefficients ac) {
-        return mapper.insert(ac);
-    }
-
-    //通过additionalId查询是否存在未确认的特殊情况申请，存在的话，不能通过确认。
-    @Override
-    public int sureUnSureByAdditionalId(String additional) {
-        return mapper.selectByrAdditionalId(additional);
-    }
-
-    //获取用户的特殊情况申请，返回列表
-    @Override
-    public List<acSure> getAdditionalSure() {
-        return mapper.getAdditionalSure();
-    }
-
-    //跟新 院系 确认 通过特殊情况
-    @Override
-    public int updateIsSureByAdditionalId(String additionalId) {
-        //根据唯一id，查看是否存在记录，
-        //根据参数addition查看表里是否有记录，而且没有被逻辑删除
-        QueryWrapper<AdditionalCoefficients> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("additional_id", additionalId)
-                .eq("is_delete", 0);
-        long count = mapper.selectCount(queryWrapper);
-        System.out.println("count:" + count);
-        if (count > 0) {
-            return mapper.updateIsSureByAdditionalId(additionalId);
-        } else {
-            return 0;
-        }
-    }
-
-    //不通过的
-    @Override
-    public int updateNoSureByAdditionalId(String additionalId) {
-        QueryWrapper<AdditionalCoefficients> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("additional_id", additionalId)
-                .eq("is_delete", 0);
-        long count = mapper.selectCount(queryWrapper);
-        if (count > 0) {
-            return mapper.updateUnSureByAdditionalId(additionalId);
-        } else {
-            return 0;
-        }
+    public AdditionalCoefficients selectByAdditionalId(String additional_coefficients_id) {
+        QueryWrapper<AdditionalCoefficients> wrapper = new QueryWrapper<>();
+        wrapper.eq("additional_coefficients_id", additional_coefficients_id);
+        return mapper.selectOne(wrapper);
     }
 }

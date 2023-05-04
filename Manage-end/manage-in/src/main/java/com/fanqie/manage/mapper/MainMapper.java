@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author fq
@@ -17,5 +17,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MainMapper extends BaseMapper<Main> {
 
+    /**
+     * 通过唯一的字符串查询教师的 课程 信息记录。
+     *
+     * @param uniqueNumber
+     * @return  全部信息，表里面的
+     */
     Main selectByUniqueNumber(String uniqueNumber);
 }

@@ -109,9 +109,11 @@ public class DemoDataListener implements ReadListener<excelDemo> {
         //查到教师的id了 在《main》表添加一条记录
         String s = UUIDStringUtils.randomUUID();//三个表都存储的唯一字符串
         Main main=new Main();
+
         main.setUserId(String.valueOf(users.get(0).getUserId()));//TODO:这里默认选择第一条记录
         main.setTerm(data.getTerm());
         main.setUniqueNumber(s);
+
         int number=mainMapper.insert(main);
         if(number!=1){
             System.out.println("添加《main》数据失败");
@@ -120,6 +122,13 @@ public class DemoDataListener implements ReadListener<excelDemo> {
         Teach teach=new Teach();
         teach.setTeachId(s);
         teach.setTeachName(data.getTeachName());
+        //todo:优化：通过过滤器实现赋值。
+        if(data.getPracticalHours()==null){
+            data.setPracticalHours("0");
+        }
+        if(data.getTheoreticalHours()==null){
+            data.setTheoreticalHours("0");
+        }
         teach.setPracticalHours(data.getPracticalHours());
         teach.setTheoreticalHours(data.getTheoreticalHours());
         number=teachMapper.insert(teach);

@@ -39,7 +39,7 @@ public class MainAllView implements Serializable {
     /**
      * 其他情况加的系数
      */
-    private String additional;
+    private String additionalId;
 
     /**
      * 是否教师已确认

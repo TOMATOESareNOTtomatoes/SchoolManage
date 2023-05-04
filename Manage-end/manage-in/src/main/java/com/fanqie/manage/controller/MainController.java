@@ -3,6 +3,7 @@ package com.fanqie.manage.controller;
 import com.fanqie.commonutils.utils.Permission;
 import com.fanqie.commonutils.utils.PermissionEnum;
 import com.fanqie.commonutils.utils.R;
+import com.fanqie.manage.entity.Main;
 import com.fanqie.manage.entity.User;
 import com.fanqie.manage.param.acSure;
 import com.fanqie.manage.param.userDoInfo;
@@ -42,9 +43,7 @@ public class MainController {
      * 这个返回的是没有确认的工作量实时更新的，
      * 通过视图结合逻辑查询得出的工作量，这是老师还没有确认的版本
      * 总
-     */
 
-    /**
      * 获取所有教师的工作量（未确认）
      * @return mainAllView实体类的列表
      */
@@ -94,7 +93,7 @@ public class MainController {
     }
 
     /**
-     * 用来给教务处人员确认教师特殊情况申请的。
+     * 用来给教务处人员确认教师特殊情况申请的。  todo：要修改了，按照院系为参数提供结果。
      * @return 未确认的特殊情况申请列表
      */
     @GetMapping("getAdditionalSure")
@@ -133,6 +132,94 @@ public class MainController {
      * todo：加个教师课程信息错误提交，搞个简单的统计结果表，就是全部教职工的工作量情况（只有名字、院系、总工作量）三个属性。
      * todo：1、教务处同意后，回复用户特定的通知、2修改某一教师的课程信息，课时等等。3、（这个感觉必要）管理员可以修改课程的系数
      */
+    //实现教师课程错误信息提交申请。根据教师的id查询课程信息，课程信息提交申请。
+    // 要新建表。教务处确认。删除原表信息，添加新的课程信息
+
+    /**
+     * 用来给教务处人员确认教师特殊情况申请的。管理员确认特殊情况用表。
+     * @return 特殊情况申请列表
+     */
+    @GetMapping("getAdditionalSureA")
+    @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
+    public R getAdditionalSureA(){
+        return mainService.getAdditionalSureA();
+    }
+
+    /**
+     * 通过教师的特殊申请  管理员
+     * @param acSure
+     * @return
+     */
+    @PostMapping("AdditionalSureA")
+    @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
+    public R AdditionalSureA(@RequestBody acSure acSure){
+        System.out.println("G同意教师的特殊申请！"+acSure);
+        return mainService.AdditionalSureA(acSure);
+    }
+
+    /**
+     * 不通过教师的特殊申请。管理员
+     * @param acSure
+     * @return
+     */
+
+    @PostMapping("AdditionalUnSureA")
+    @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
+    public R AdditionalUnSureA(@RequestBody acSure acSure){
+        System.out.println("GGGGGG"+acSure);
+        return mainService.AdditionalUnSureA(acSure);
+    }
+
+    /**
+     * 教师 申请 添加 课程记录
+     * @param main
+     * @return
+     */
+    @PostMapping("addMain")
+    public R addMain(@RequestBody Main main){
+        return mainService.addMain(main);
+    }
+
+    /**
+     * 修改用户的课程信息。 院长修改 用户的 课程信息
+     * @param main
+     * @return
+     */
+    @PostMapping("upDataByMain")
+    public R upDataByMain(@RequestBody Main main){
+        return mainService.upDataByMain(main);
+    }
+
+    /**
+     * 获取 理论 学时的 系数
+     * @return
+     */
+    @GetMapping("getCExperiment")
+    public R getCExperiment(){
+        return mainService.getCExperiment();
+    }
+
+    /**
+     * 获取 有理论学时的 实验部分的 系数
+     * @return
+     */
+    @GetMapping("getCTheory")
+    public R getCTheory(){
+        return mainService.getCTheory();
+    }
+
+    /**
+     * 获取 全实际 学时的 系数
+     * @return
+     */
+    @GetMapping("getCPractice")
+    public R getCPractice(){
+        return mainService.getCPractice();
+    }
+
+    //todo：修改接口
+
+
 
 }
 

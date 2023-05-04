@@ -31,6 +31,11 @@ public class MainOut implements Serializable {
     private Long id;
 
     /**
+     * 学期（时间）
+     */
+    private String term;
+
+    /**
      * 用户id
      */
     private String userId;
@@ -41,7 +46,7 @@ public class MainOut implements Serializable {
     private String additional;
 
     /**
-     * 已经确认
+     * 已经确认  0，教师提交了确认的情况，1 教务处已经同意  2 管理员同意了  3教务处不同意  4 管理员不同意
      */
     private String isSure;
 
@@ -96,7 +101,7 @@ public class MainOut implements Serializable {
     private String teachType;
 
     /**
-     * 工作量计算过程 id
+     * 工作量计算过程 id  对应表 calculation_process 的 additional_id
      */
     private String caseloadProcessId;
 
@@ -104,6 +109,16 @@ public class MainOut implements Serializable {
      * 工作量结果
      */
     private String caseload;
+
+    /**
+     * 院系同意人的id
+     */
+    private String user_plus_id;
+
+    /**
+     * 管理员同意人的id
+     */
+    private String admin_id;
 
     /**
      * 逻辑删除；0表示未删除；1表示删除
@@ -120,9 +135,6 @@ public class MainOut implements Serializable {
      */
     private Date gmtModified;
 
-    /**
-     * 学期（时间）
-     */
-    private String term;
+
 
 }

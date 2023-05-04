@@ -18,5 +18,5 @@ public class acSure {
     private double isDoubleLanguage;
     private double isWeekend;
     private String teachName;
-    private String classNames;
+    private String className;
 }

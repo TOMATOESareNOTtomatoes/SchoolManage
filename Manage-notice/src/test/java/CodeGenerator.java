@@ -9,10 +9,6 @@
 //import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 //import org.junit.Test;
 //
-///**
-// * @author
-// * @since 2018/12/13
-// */
 //public class CodeGenerator {
 //
 //    @Test
@@ -23,7 +19,7 @@
 //
 //        // 2、全局配置
 //        GlobalConfig gc = new GlobalConfig();
-//        String projectPath = System.getProperty("jkjm");//自动获取项目路径，可能有问题
+//        //String projectPath = System.getProperty("jkjm");//自动获取项目路径，可能有问题
 //        gc.setOutputDir("C:\\Users\\fanqie\\Desktop\\JavaProject\\Manage-notice" + "/src/main/java");//项目路径-----------------------
 //
 //        gc.setAuthor("fq");//作者
@@ -64,7 +60,7 @@
 //        // 5、策略配置
 //        StrategyConfig strategy = new StrategyConfig();
 //
-//        strategy.setInclude("announcement","announcement_user","login");//数据库表达 名称--------------------------------------可以，“”多个表
+//        strategy.setInclude("pop_up_notifications");//数据库表达 名称--------------------------------------可以，“”多个表
 //
 //        strategy.setNaming(NamingStrategy.underline_to_camel);//数据库表映射到实体的命名策略
 //        strategy.setTablePrefix(pc.getModuleName() + "_"); //生成实体时去掉表前缀

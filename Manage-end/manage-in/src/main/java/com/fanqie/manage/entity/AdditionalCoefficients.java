@@ -33,7 +33,7 @@ public class AdditionalCoefficients implements Serializable {
     /**
      * 唯一id
      */
-    private String additionalId;
+    private String additionalCoefficientsId;
 
     /**
      * 是否教授新课
@@ -49,11 +49,6 @@ public class AdditionalCoefficients implements Serializable {
      * 是否周末或晚上授课
      */
     private double isWeekend;
-
-    /**
-     * 院长是否确认，0未确认 1确认  2不同意
-     */
-    private Integer isSure;
 
     /**
      * 逻辑删除；0表示未删除；1表示删除

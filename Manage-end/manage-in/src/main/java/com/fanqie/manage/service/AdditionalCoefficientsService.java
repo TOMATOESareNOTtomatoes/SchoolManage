@@ -2,9 +2,6 @@ package com.fanqie.manage.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fanqie.manage.entity.AdditionalCoefficients;
-import com.fanqie.manage.param.acSure;
-
-import java.util.List;
 
 /**
  * <p>
@@ -17,18 +14,11 @@ import java.util.List;
 
 public interface AdditionalCoefficientsService extends IService<AdditionalCoefficients> {
 
-    AdditionalCoefficients getByAdditionalId(String additional);
+    /**
+     * 通过 acId 返回系数
+     * @param additional
+     * @return
+     */
+    AdditionalCoefficients selectByAdditionalId(String additional);
 
-    int addAdditional(AdditionalCoefficients ac);
-
-    //通过additionalId查询是否存在未确认的特殊情况申请，存在的话，不能通过确认。
-    int sureUnSureByAdditionalId(String additional);
-
-    List<acSure> getAdditionalSure();
-
-    //通过的
-    int updateIsSureByAdditionalId(String additionalId);
-
-    //不通过的
-    int updateNoSureByAdditionalId(String additionalId);
 }

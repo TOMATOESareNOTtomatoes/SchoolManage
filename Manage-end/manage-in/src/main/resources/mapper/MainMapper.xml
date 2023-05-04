@@ -2,13 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.fanqie.manage.mapper.MainMapper">
 
-<!--    -->
-<select id="selectByUniqueNumber" resultType="com.fanqie.manage.entity.Main">
-    SELECT id, term, user_id, unique_number, additional, is_sure, is_delete, gmt_create, gmt_modified
-    FROM main
-    WHERE unique_number = #{uniqueNumber}
-</select>
-
+    <!--    -->
+    <select id="selectByUniqueNumber" resultType="com.fanqie.manage.entity.Main">
+        SELECT id,
+               term,
+               user_id,
+               unique_number,
+               additional_id,
+               is_sure,
+               caseload_process_id,
+               caseload,
+               user_plus_id,
+               admin_id,
+               info,
+               add_type,
+               before_id,
+               is_delete,
+               gmt_create,
+               gmt_modified
+        FROM main
+        WHERE unique_number = #{uniqueNumber}
+          AND (is_delete != 1 OR is_delete IS NULL)
+    </select>
 
 
 </mapper>
