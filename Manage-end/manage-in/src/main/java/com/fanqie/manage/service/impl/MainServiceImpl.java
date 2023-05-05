@@ -212,7 +212,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             }
             //将部分信息直接复制过来
             userDoInfo doInfo = new userDoInfo();
-            doInfo.setIsSure(0);//设置未确认
+            doInfo.setIsSure("0");//设置未确认
             //直接赋值
             doInfo.setUserId(view.getUserId());
             doInfo.setUserName(view.getUserName());
@@ -668,20 +668,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     userDoInfo.setTeachName(mainAllView.getTeachName());
                     userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
                     userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
-                    if (additionalMain != null) {
-                        String additionalCoefficientsId = additionalMain.getAdditionalCoefficientsId();
-                        int ccc = Integer.parseInt(additionalCoefficientsId);
-                        if ((ccc / 100) == 1) {
-                            userDoInfo.setIsFirst(0.1);
-                        }
-                        if (((ccc / 10) % 10) == 1) {
-                            userDoInfo.setIsDoubleLanguage(1.5);
-                        }
-                        if ((ccc % 10) == 1) {
-                            userDoInfo.setIsWeekend(1.1);
-                        }
-                    }
-                    return userDoInfo;
+                    return getUserDoInfo(additionalMain, userDoInfo);
                 })
                 .collect(Collectors.toList());
         return R.ok().data("userDoInfoList", userDoInfoList);
@@ -731,6 +718,59 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
      */
     @Override
     public R getAddMainListA() {
-        return null;
+        QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("add_type", 1, 2)
+                .and(wrapper -> wrapper.isNull("is_delete")
+                        .or().ne("is_delete", 1))
+                .eq("is_sure",5);
+        List<Main> mainList = mainMapper.selectList(queryWrapper);
+        System.out.println("mainList" + mainList);
+        List<MainAllView> mainAllViewList = new ArrayList<>();
+        for (Main main : mainList) {
+            QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
+            wrapper.eq("unique_number", main.getUniqueNumber());
+            List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
+            mainAllViewList.addAll(list);
+        }
+        System.out.println("mainAllViewList" + mainAllViewList);
+        List<userDoInfo> userDoInfoList = mainAllViewList.stream()
+                .map(mainAllView -> {
+                    QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
+                    additionalMainWrapper.eq("additional_id", mainAllView.getUniqueNumber());
+                    AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
+                    userDoInfo userDoInfo = new userDoInfo();
+                    userDoInfo.setUniqueNumber(mainAllView.getUniqueNumber());
+                    userDoInfo.setIsFirst(0);
+                    userDoInfo.setIsDoubleLanguage(0);
+                    userDoInfo.setIsWeekend(0);
+                    userDoInfo.setUserName(mainAllView.getUserName());
+                    userDoInfo.setClassName(mainAllView.getClassName());
+                    userDoInfo.setClassNumber(mainAllView.getClassNumber());
+                    userDoInfo.setTeachName(mainAllView.getTeachName());
+                    userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
+                    userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
+                    userDoInfo.setIsSure(mainAllView.getFaculty());//todo:这是不好的，应该创建新的接口类用来返回数据
+
+                    return getUserDoInfo(additionalMain, userDoInfo);
+                })
+                .collect(Collectors.toList());
+        return R.ok().data("userDoInfoList", userDoInfoList);
+    }
+
+    private userDoInfo getUserDoInfo(AdditionalMain additionalMain, userDoInfo userDoInfo) {
+        if (additionalMain != null) {
+            String additionalCoefficientsId = additionalMain.getAdditionalCoefficientsId();
+            int ccc = Integer.parseInt(additionalCoefficientsId);
+            if ((ccc / 100) == 1) {
+                userDoInfo.setIsFirst(0.1);
+            }
+            if (((ccc / 10) % 10) == 1) {
+                userDoInfo.setIsDoubleLanguage(1.5);
+            }
+            if ((ccc % 10) == 1) {
+                userDoInfo.setIsWeekend(1.1);
+            }
+        }
+        return userDoInfo;
     }
 }

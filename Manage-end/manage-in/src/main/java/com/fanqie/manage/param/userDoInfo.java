@@ -85,6 +85,6 @@ public class userDoInfo {
     /**
      * 是否确认
      */
-    private Integer isSure;
+    private String isSure;
 
 }
