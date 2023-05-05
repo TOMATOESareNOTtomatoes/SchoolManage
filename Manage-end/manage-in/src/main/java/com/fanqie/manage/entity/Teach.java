@@ -41,6 +41,11 @@ public class Teach implements Serializable {
     private String teachName;
 
     /**
+     * 课程学生的人数
+     */
+    private int teachNumber;
+
+    /**
      * 理论学时
      */
     private String theoreticalHours;

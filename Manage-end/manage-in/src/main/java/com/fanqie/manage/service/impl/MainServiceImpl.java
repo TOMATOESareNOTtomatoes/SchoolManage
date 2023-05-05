@@ -2,6 +2,7 @@ package com.fanqie.manage.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.R;
@@ -331,25 +332,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         if (main == null) {
             return R.error().message("查询不到课程信息！");
         }
-        String number = "";
-        //是第一次授课
-        if (userDoInfo.getIsFirst() == 0.1) {
-            number = "1";
-        } else {
-            number = "0";
-        }
-        //是双语授课
-        if (userDoInfo.getIsDoubleLanguage() == 1.5) {
-            number += "1";
-        } else {
-            number += "0";
-        }
-        if (userDoInfo.getIsWeekend() == 1.1) {
-            number += "1";
-        } else {
-            number += "0";
-        }
-
+        //根据特殊情况获取特殊情况的id  偷懒了。应该查表的。
+        String number= getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
+                userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend());
         if (main.getAdditionalId() == null) {
             //添加记录，
             String additionalID = UUIDStringUtils.randomUUID();
@@ -482,7 +467,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         //添加main记录
         String uNumber = UUIDStringUtils.randomUUID();//唯一id
         Main main = new Main();
-        if(!userDoInfo.getIsSure().equals("3")){
+        if (!userDoInfo.getIsSure().equals("3")) {
             main.setAdditionalId(uNumber);
         }
         main.setTerm(String.valueOf(new Date()));
@@ -539,7 +524,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             }
         }
         //添加特殊情况  isSure=3 说明不存在特殊情况。
-        if(!userDoInfo.getIsSure().equals("3")){
+        if (!userDoInfo.getIsSure().equals("3")) {
             AdditionalMain additionalMain = new AdditionalMain();
             additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
             //TOdo:写成一个方法来调用
@@ -731,7 +716,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         queryWrapper.in("add_type", 1, 2)
                 .and(wrapper -> wrapper.isNull("is_delete")
                         .or().ne("is_delete", 1))
-                .eq("is_sure",5);
+                .eq("is_sure", 5);
         List<Main> mainList = mainMapper.selectList(queryWrapper);
         System.out.println("mainList" + mainList);
         List<MainAllView> mainAllViewList = new ArrayList<>();
@@ -802,6 +787,207 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         return R.ok().message("成功同意了！");
     }
 
+    /**
+     * 用户  修改  课程信息     isSure=3 说明不存在特殊情况。
+     * 实现 逻辑
+     *
+     * @param userDoInfo
+     * @return
+     */
+    @Override
+    public R UserReviseDo(userDoInfo userDoInfo) {
+        QueryWrapper<Main> mainQueryWrapper = new QueryWrapper<>();
+        mainQueryWrapper.eq("unique_number", userDoInfo.getUniqueNumber());
+        //todo：添加未被删除查询。
+        Main main = mainMapper.selectOne(mainQueryWrapper);
+        if (main != null) {
+            //说明不是用户自己修改。
+            if (!main.getUserId().equals(userDoInfo.getUserId())) {
+
+                Teach teach = teachMapper.selectOne(new QueryWrapper<Teach>()
+                        .eq("teach_id", userDoInfo.getUniqueNumber()));
+                if (teach != null) {
+                    teach.setTeachName(userDoInfo.getTeachName());
+                    teach.setTeachNumber(userDoInfo.getClassNumber());
+                    teach.setTheoreticalHours(String.valueOf(userDoInfo.getTheoreticalHours()));
+                    teach.setPracticalHours(String.valueOf(userDoInfo.getPracticalHours()));
+                    int i = teachMapper.updateById(teach);
+                    if (i != 1) {
+                        return R.error().message("院长修改出错！teach");
+                    }
+                }
+                String[] arr = userDoInfo.getClassName().split("\\+");
+                for (String y : arr) {
+                    QueryWrapper<Class> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("class_name", y);
+                    Class aClass = classMapper.selectOne(queryWrapper);
+                    if (aClass == null) {
+                        // Add new class
+                        Class c = new Class();
+                        c.setClassName(y);
+                        c.setClassId(RandomNumberGenerator.generate());
+                        classMapper.insert(c);
+                        aClass = classMapper.selectOne(queryWrapper);
+                    }
+                    TeachClass teachClass = new TeachClass();
+                    teachClass.setClassId(aClass.getClassId());
+                    teachClass.setUniqueNumber(userDoInfo.getUniqueNumber());
+                    int i = teachClassMapper.insert(teachClass);
+                    if (i != 1) {
+                        return R.error().message("院长修改出错！teachClass");
+                    }
+                }
+
+                AdditionalMain additionalMain = additionalMainService.getOne(new QueryWrapper<AdditionalMain>()
+                        .eq("additional_id", userDoInfo.getUniqueNumber())
+                        .isNull("is_delete")
+                        .or()
+                        .eq("is_delete", 0)
+                );
+                if (additionalMain != null) {
+                    //说明本来存在特殊情况。
+                    if (!userDoInfo.getIsSure().equals("3")) {
+                        //说明现在取消了。
+                        additionalMain.setIsDelete(1);
+                        boolean b = additionalMainService.updateById(additionalMain);
+                        if (!b) {
+                            return R.error().message("院长修改出错！AdditionalA");
+                        }
+                    }
+                    additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
+                            userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend()));
+                    boolean b = additionalMainService.updateById(additionalMain);
+                    if (!b) {
+                        return R.error().message("院长修改出错！Additional");
+                    }
+                }
+                main.setUserPlusId(userDoInfo.getUserId());
+                main.setIsSure(5);//代表院长已经确认
+                int i = mainMapper.update(main, new UpdateWrapper<Main>()
+                        .eq("unique_number", userDoInfo.getUniqueNumber()));
+                if(i!=1){
+                    return R.error().message("院长修改出错！main");
+                }
+                return R.ok().message("院长修改记录成功！");
+            } else {
+                //删除旧的记录。
+                main.setIsDelete(1);
+                int iu = mainMapper.updateById(main);
+                if (iu != 1) {
+                    return R.error().message("修改信息失败！");
+                }
+                //添加新的main 记录
+                Main newMain = new Main();
+                String uNumber = UUIDStringUtils.randomUUID();
+                newMain.setUniqueNumber(uNumber);
+                newMain.setBeforeId(userDoInfo.getUniqueNumber());
+                newMain.setUserId(userDoInfo.getUserId());
+                newMain.setTerm(String.valueOf(new Date()));
+                if (!userDoInfo.getIsSure().equals("3")) {
+                    //说明存在特殊情况。
+                    newMain.setAdditionalId(uNumber);
+                }
+                mainMapper.insert(newMain);
+                //课程表添加信息
+                Teach teach = new Teach();
+                teach.setTeachId(uNumber);
+                teach.setTeachName(userDoInfo.getTeachName());
+                teach.setTeachNumber(userDoInfo.getClassNumber());//课程人数
+                teach.setTheoreticalHours(String.valueOf(userDoInfo.getTheoreticalHours()));
+                teach.setPracticalHours(String.valueOf(userDoInfo.getPracticalHours()));
+                int insert1 = teachMapper.insert(teach);
+                if (insert1 != 1) {
+                    return R.error().message("添加课程信息失败2");
+                }
+                //保存班级信息
+                String[] arr = userDoInfo.getClassName().split("\\+");
+                System.out.print("班级：" + userDoInfo.getClassName() + "\n");
+                for (String y : arr) {
+                    System.out.print("一个班级：" + y + "\n");
+                    QueryWrapper queryWrapper = new QueryWrapper();
+                    queryWrapper.eq("class_name", y);
+                    Class aClass = classMapper.selectOne(queryWrapper);
+                    if (aClass == null) {
+                        //查询不到班级信息，添加班级
+                        Class c = new Class();
+                        c.setClassName(y);
+                        c.setClassId(RandomNumberGenerator.generate());
+                        //c.setClassNumber(userDoInfo.getClassNumber() / arr.length);
+                        int i = classMapper.insert(c);
+                        if (i != 1) {
+                            return R.error().message("修改信息失败3！");
+                        } else {
+                            aClass = classMapper.selectOne(queryWrapper);
+                            if (aClass == null) {
+                                return R.error().message("修改信息失败4！");
+                            }
+                        }
+                    }
+                    //查询到班级id  添加teachClass表信息
+                    TeachClass teachClass = new TeachClass();
+                    teachClass.setClassId(aClass.getClassId());
+                    teachClass.setUniqueNumber(uNumber);
+                    int itc = teachClassMapper.insert(teachClass);
+                    if (itc != 1) {
+                        return R.error().message("添加课程信息失败3");
+                    }
+                }
+                //添加特殊情况  isSure=3 说明不存在特殊情况。
+                if (!userDoInfo.getIsSure().equals("3")) {
+                    AdditionalMain additionalMain = new AdditionalMain();
+                    additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
+                    additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
+                            userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend()));
+                    //todo:目前是还会再特殊情况里面出现，要想不出现的话，设置成其他值。比如 9
+                    additionalMain.setIsSure(1);
+                    int ami = additionalMainService.getBaseMapper().insert(additionalMain);
+                    if (ami != 1) {
+                        return R.error().message("添加课程信息失败4");
+                    }
+                }
+                return R.ok().message("修改成功！！");
+            }
+        }
+        return R.error().message("查询不到课程信息！！");
+    }
+
+    /**
+     * 根据特殊情况 得出特殊情况的 id
+     *
+     * @param isFirst          等于 0.1  说明是第一次授课  其他值说明不是
+     * @param isDoubleLanguage 等于1.5  说明是双语授课
+     * @param isWeekend        等于1.1 说明是周末上课
+     * @return
+     */
+    private String getAdditionalCoefficientsId(double isFirst, double isDoubleLanguage, double isWeekend) {
+        String number = "";
+        //是第一次授课
+        if (isFirst == 0.1) {
+            number = "1";
+        } else {
+            number = "0";
+        }
+        //是双语授课
+        if (isDoubleLanguage == 1.5) {
+            number += "1";
+        } else {
+            number += "0";
+        }
+        if (isWeekend == 1.1) {
+            number += "1";
+        } else {
+            number += "0";
+        }
+        return number;
+    }
+
+    /**
+     * 将 特殊情况的 id  解析为对应的 情况  理论上应该根据 id查询表，然后 得出的
+     *
+     * @param additionalMain
+     * @param userDoInfo
+     * @return
+     */
     private userDoInfo getUserDoInfo(AdditionalMain additionalMain, userDoInfo userDoInfo) {
         if (additionalMain != null) {
             String additionalCoefficientsId = additionalMain.getAdditionalCoefficientsId();

@@ -100,6 +100,13 @@ public interface MainService extends IService<Main> {
      * @return
      */
     R sureAddMainA(soleAndUser soleAndUser);
+
+    /**
+     * 用户  修改  课程信息
+     * @param userDoInfo
+     * @return
+     */
+    R UserReviseDo(userDoInfo userDoInfo);
 }
 
 

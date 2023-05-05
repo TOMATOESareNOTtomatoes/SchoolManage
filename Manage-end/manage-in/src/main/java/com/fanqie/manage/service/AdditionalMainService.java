@@ -1,5 +1,6 @@
 package com.fanqie.manage.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fanqie.manage.entity.AdditionalMain;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fanqie.manage.param.acSure;
@@ -50,4 +51,11 @@ public interface AdditionalMainService extends IService<AdditionalMain> {
      * @return 修改的数量
      */
     int updateByAdditionalIdA(soleAndUser soleAndUser);
+
+    /**
+     * 查询 特殊情况 根据唯一值
+     * @param additional_id
+     * @return
+     */
+    AdditionalMain selectOne(QueryWrapper<AdditionalMain> additional_id);
 }

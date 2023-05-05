@@ -100,5 +100,16 @@ public class AdditionalMainServiceImpl extends ServiceImpl<AdditionalMainMapper,
         return count;
     }
 
+    /**
+     * 查询 特殊情况 根据唯一值
+     *
+     * @param additional_id
+     * @return
+     */
+    @Override
+    public AdditionalMain selectOne(QueryWrapper<AdditionalMain> additional_id) {
+        return mapper.selectOne(additional_id);
+    }
+
 
 }

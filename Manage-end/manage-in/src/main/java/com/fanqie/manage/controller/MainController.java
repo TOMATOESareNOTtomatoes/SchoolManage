@@ -94,6 +94,16 @@ public class MainController {
     }
 
     /**
+     * 用户  修改   课程 信息
+     * @param userDoInfo
+     * @return
+     */
+    @PostMapping("UserReviseDo")
+    public R UserReviseDo(@RequestBody userDoInfo userDoInfo){
+        return mainService.UserReviseDo(userDoInfo);
+    }
+
+    /**
      *  管理员  特殊情况申请表
      * @return 未确认的特殊情况申请列表
      */
