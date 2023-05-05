@@ -80,6 +80,13 @@ public interface MainService extends IService<Main> {
      * @return
      */
     R getAddMainList(UserCheckParam userCheckParam);
+
+    /**
+     * 院长同意 新添加的 课程信息
+     * @param soleAndUser
+     * @return
+     */
+    R sureAddMain(soleAndUser soleAndUser);
 }
 
 

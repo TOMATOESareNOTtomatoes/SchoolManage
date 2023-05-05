@@ -635,7 +635,13 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R getAddMainList(UserCheckParam userCheckParam) {
         QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("add_type", 1, 2);
+        queryWrapper.in("add_type", 1, 2)
+                .ne("is_delete", 1)
+                .eq("is_sure", null)
+                .or()
+                .eq("is_sure", 1)
+                .or()
+                .eq("is_sure", 0);
         List<Main> mainList = mainMapper.selectList(queryWrapper);
         List<MainAllView> mainAllViewList = new ArrayList<>();
         for (Main main : mainList) {
@@ -661,7 +667,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     userDoInfo.setTeachName(mainAllView.getTeachName());
                     userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
                     userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
-                    if(additionalMain!=null){
+                    if (additionalMain != null) {
                         String additionalCoefficientsId = additionalMain.getAdditionalCoefficientsId();
                         int ccc = Integer.parseInt(additionalCoefficientsId);
                         if ((ccc / 100) == 1) {
@@ -679,5 +685,41 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 .collect(Collectors.toList());
         return R.ok().data("userDoInfoList", userDoInfoList);
 
+    }
+
+    /**
+     * 院长同意 新添加的 课程信息
+     *
+     * @param soleAndUser
+     * @return
+     */
+    @Override
+    public R sureAddMain(soleAndUser soleAndUser) {
+        QueryWrapper<Main> mainQueryWrapper = new QueryWrapper<>();
+        mainQueryWrapper.eq("unique_number", soleAndUser.getSole());
+        Main main = mainMapper.selectOne(mainQueryWrapper);
+
+        QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
+        additionalMainWrapper.eq("additional_id", soleAndUser.getSole());
+        AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
+
+        if (main != null) {
+            main.setIsSure(5);
+            main.setUser_plus_id(soleAndUser.getUserId());
+            int i = mainMapper.updateById(main);
+            if (i != 1) {
+                return R.error().message("同意失败！");
+            }
+        }
+
+        if (additionalMain != null) {
+            additionalMain.setIsSure(5);
+            additionalMain.setUserPlusId(soleAndUser.getUserId());
+            boolean b = additionalMainService.updateById(additionalMain);
+            if (!b) {
+                return R.error().message("同意失败!！");
+            }
+        }
+        return R.ok().message("成功同意了！");
     }
 }

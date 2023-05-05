@@ -201,6 +201,15 @@ public class MainController {
     }
 
     /**
+     * 院长 同意 课程信息
+     */
+    @PostMapping("sureAddMain")
+    public R sureAddMain(@RequestBody soleAndUser soleAndUser){
+        System.out.println("院长确认课程信息："+soleAndUser);
+        return mainService.sureAddMain(soleAndUser);
+    }
+
+    /**
      * 修改用户的课程信息。 院长修改 用户的 课程信息
      * @param main
      * @return
