@@ -139,7 +139,7 @@ public class DemoDataListener implements ReadListener<excelDemo> {
         String[] arr = data.getClassName().split(",");
         System.out.print("班级："+data.getClassName()+"\n");
         for (String y : arr) {
-            System.out.print("一个班级："+y+"\n");
+            //System.out.print("一个班级："+y+"\n");
             QueryWrapper queryWrapper=new QueryWrapper();
             queryWrapper.eq("class_name",y);
             Class aClass = classMapper.selectOne(queryWrapper);

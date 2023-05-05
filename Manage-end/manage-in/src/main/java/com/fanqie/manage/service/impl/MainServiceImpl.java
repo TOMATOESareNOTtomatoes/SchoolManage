@@ -1,10 +1,13 @@
 package com.fanqie.manage.service.impl;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.R;
+import com.fanqie.commonutils.utils.RandomNumberGenerator;
 import com.fanqie.commonutils.utils.UUIDStringUtils;
+import com.fanqie.manage.entity.Class;
 import com.fanqie.manage.entity.*;
 import com.fanqie.manage.listener.DemoDataListener;
 import com.fanqie.manage.mapper.*;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -217,20 +221,20 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             doInfo.setClassNumber(view.getClassNumber());
             doInfo.setTeachName(view.getTeachName());
             //todo：可以删除了，重新录入数据的话。
-            if(view.getPracticalHours()==null){
+            if (view.getPracticalHours() == null) {
                 view.setPracticalHours("0");
             }
-            if(view.getTheoreticalHours()==null){
+            if (view.getTheoreticalHours() == null) {
                 view.setTheoreticalHours("0");
             }
             doInfo.setPracticalHours(Integer.parseInt(view.getPracticalHours()));
             doInfo.setTheoreticalHours(Integer.parseInt(view.getTheoreticalHours()));
             //---------------------------------------------
             //查看 特殊情况是否有效
-            AdditionalMain am=null;
-            if(view.getAdditionalId()!=null){
+            AdditionalMain am = null;
+            if (view.getAdditionalId() != null) {
                 // 查询有 有效的特殊情况。
-                am= additionalMainService.getByAdditionalId(view.getAdditionalId());
+                am = additionalMainService.getByAdditionalId(view.getAdditionalId());
             }
             if (am != null) {
                 //通过唯一 id 查询 返回特殊情况的系数
@@ -385,8 +389,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
      * 教师确认课程信息
      * 处理流程：
      * 如果不存在修改信息，则可以直接确认
-     *    存在修改/特殊情况添加，
-     *    则先查看是否已通过 两次同意
+     * 存在修改/特殊情况添加，
+     * 则先查看是否已通过 两次同意
+     *
      * @param userDoInfo
      * @return
      */
@@ -427,7 +432,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         main.setCaseload(String.valueOf(userDoInfo.getAdd()));  //保存工作量
         main.setIsSure(1);
         int i = mainMapper.updateById(main);
-        if(i==1){
+        if (i == 1) {
             return R.ok().message("确认工作量成功！");
         }
         return R.error().message("确认课程工作量失败");
@@ -435,6 +440,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
 
     /**
      * 修改为管理员的  确认用户特殊请求
+     *
      * @return 特殊情况申请列表
      */
     @Override
@@ -451,7 +457,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R AdditionalSure(soleAndUser soleAndUser) {
         int i = additionalMainService.updateByAdditionalId(soleAndUser);
-        if(i==1){
+        if (i == 1) {
             return R.ok().message("同意成功！");
         }
         return R.error().message("修改失败！");
@@ -462,9 +468,100 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         return null;
     }
 
+    /**
+     * 教师添加课程信息
+     *
+     * @param userDoInfo
+     * @return
+     */
     @Override
-    public R addMain(Main main) {
-        return R.ok().message("接口正常");
+    public R addMain(userDoInfo userDoInfo) {
+        //添加main记录
+        String uNumber = UUIDStringUtils.randomUUID();//唯一id
+        Main main = new Main();
+        main.setTerm(String.valueOf(new Date()));
+        main.setUniqueNumber(uNumber);
+        main.setUserId(userDoInfo.getUserId());
+        main.setAddType("2");//添加的类型，2 说明是添加的
+        int insert = mainMapper.insert(main);
+        if (insert != 1) {
+            return R.error().message("添加课程信息失败");
+        }
+        //课程表添加信息
+        Teach teach = new Teach();
+        teach.setTeachId(uNumber);
+        teach.setTeachName(userDoInfo.getTeachName());
+        teach.setTheoreticalHours(String.valueOf(userDoInfo.getTheoreticalHours()));
+        teach.setPracticalHours(String.valueOf(userDoInfo.getPracticalHours()));
+        int insert1 = teachMapper.insert(teach);
+        if (insert1 != 1) {
+            return R.error().message("添加课程信息失败2");
+        }
+        //保存班级信息
+        String[] arr = userDoInfo.getClassName().split(",");
+        System.out.print("班级：" + userDoInfo.getClassName() + "\n");
+        for (String y : arr) {
+            System.out.print("一个班级：" + y + "\n");
+            QueryWrapper queryWrapper = new QueryWrapper();
+            queryWrapper.eq("class_name", y);
+            Class aClass = classMapper.selectOne(queryWrapper);
+            if (aClass == null) {
+                //查询不到班级信息，添加班级
+                Class c = new Class();
+                c.setClassName(y);
+                c.setClassId(RandomNumberGenerator.generate());
+                c.setClassNumber(userDoInfo.getClassNumber() / arr.length);
+                int i = classMapper.insert(c);
+                if (i != 1) {
+                    System.out.printf("添加班级信息失败");
+                } else {
+                    aClass = classMapper.selectOne(queryWrapper);
+                    if (aClass == null) {
+                        System.out.printf("查询班级id出错");
+                    }
+                }
+            }
+
+            //TODO:bug,人数应该跟课程的，而不是班级，现在的逻辑，课程的人数以班级为准，而且不能修改
+            //查询到班级id  添加teachClass表信息
+            TeachClass teachClass = new TeachClass();
+            teachClass.setClassId(aClass.getClassId());
+            teachClass.setUniqueNumber(uNumber);
+            int itc = teachClassMapper.insert(teachClass);
+            if (itc != 1) {
+                return R.error().message("添加课程信息失败3");
+            }
+        }
+        //添加特殊情况
+        AdditionalMain additionalMain = new AdditionalMain();
+        additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
+        //TOdo:写成一个方法来调用
+        String number = "";
+        //是第一次授课
+        if (userDoInfo.getIsFirst() == 0.1) {
+            number = "1";
+        } else {
+            number = "0";
+        }
+        //是双语授课
+        if (userDoInfo.getIsDoubleLanguage() == 1.5) {
+            number += "1";
+        } else {
+            number += "0";
+        }
+        if (userDoInfo.getIsWeekend() == 1.1) {
+            number += "1";
+        } else {
+            number += "0";
+        }
+        additionalMain.setAdditionalCoefficientsId(number);
+        //todo:目前是还会再特殊情况里面出现，要想不出现的话，设置成其他值。
+        additionalMain.setIsSure(1);
+        int ami = additionalMainService.getBaseMapper().insert(additionalMain);
+        if (ami != 1) {
+            return R.error().message("添加课程信息失败4");
+        }
+        return R.ok().message("添加课程信息成功！");
     }
 
     @Override
@@ -494,6 +591,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
 
     /**
      * 管理员 同意 特殊情况申请
+     *
      * @param soleAndUser
      * @return
      */
@@ -513,17 +611,65 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
 
     /**
      * 获取教师特殊情况  院长的
-     *      处理流程，查询待确认的特殊情况信息
-     *      isSure = 1
+     * 处理流程，查询待确认的特殊情况信息
+     * isSure = 1
+     *
      * @param userCheckParam
      * @return
      */
     @Override
     public R getAdditionalListByF(UserCheckParam userCheckParam) {
         List<acSure> acSureList = additionalMainService.getByFaculty(userCheckParam.getFaculty());
-        if(acSureList.isEmpty()){
+        if (acSureList.isEmpty()) {
             return R.ok().message("不存在未确认的申请！！");
         }
-        return R.ok().data("AdditionalSure",acSureList);
+        return R.ok().data("AdditionalSure", acSureList);
+    }
+
+    /**
+     * 获取教师 新添加 的课程信息
+     *
+     * @param userCheckParam
+     * @return
+     */
+    @Override
+    public R getAddMainList(UserCheckParam userCheckParam) {
+        QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("add_type", 1, 2);
+        List<Main> mainList = mainMapper.selectList(queryWrapper);
+        List<MainAllView> mainAllViewList = new ArrayList<>();
+        for (Main main : mainList) {
+            QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
+            wrapper.eq("unique_number", main.getUniqueNumber());
+            wrapper.eq("faculty", userCheckParam.getFaculty());
+            List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
+            mainAllViewList.addAll(list);
+        }
+        List<userDoInfo> userDoInfoList = mainAllViewList.stream()
+                .map(mainAllView -> {
+                    QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
+                    additionalMainWrapper.eq("additional_id", mainAllView.getUniqueNumber());
+                    AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
+                    String additionalCoefficientsId = additionalMain.getAdditionalCoefficientsId();
+                    userDoInfo userDoInfo = new userDoInfo();
+                    userDoInfo.setUniqueNumber(mainAllView.getUniqueNumber());
+                    userDoInfo.setIsFirst(0);
+                    userDoInfo.setIsDoubleLanguage(0);
+                    userDoInfo.setIsWeekend(0);
+                    int ccc = Integer.parseInt(additionalCoefficientsId);
+                    if ((ccc / 100) == 1) {
+                        userDoInfo.setIsFirst(0.1);
+                    }
+                    if (((ccc / 10) % 10) == 1) {
+                        userDoInfo.setIsDoubleLanguage(1.5);
+                    }
+                    if ((ccc % 10) == 1) {
+                        userDoInfo.setIsWeekend(1.1);
+                    }
+                    return userDoInfo;
+                })
+                .collect(Collectors.toList());
+        return R.ok().data("userDoInfoList", userDoInfoList);
+
     }
 }

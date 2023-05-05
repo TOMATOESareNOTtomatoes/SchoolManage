@@ -41,7 +41,12 @@ public interface MainService extends IService<Main> {
 
     R AdditionalUnSure(acSure ac);
 
-    R addMain(Main main);
+    /**
+     * 教师添加课程信息
+     * @param userDoInfo
+     * @return
+     */
+    R addMain(userDoInfo userDoInfo);
 
     R upDataByMain(Main main);
 
@@ -68,6 +73,13 @@ public interface MainService extends IService<Main> {
      * @return
      */
     R getAdditionalListByF(UserCheckParam userCheckParam);
+
+    /**
+     * 获取教师 新添加 的课程信息
+     * @param userCheckParam
+     * @return
+     */
+    R getAddMainList(UserCheckParam userCheckParam);
 }
 
 

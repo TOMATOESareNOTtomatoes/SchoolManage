@@ -183,12 +183,21 @@ public class MainController {
 
     /**
      * 教师 申请 添加 课程记录
-     * @param main
+     * @param userDoInfo
      * @return
      */
     @PostMapping("addMain")
-    public R addMain(@RequestBody Main main){
-        return mainService.addMain(main);
+    public R addMain(@RequestBody userDoInfo userDoInfo){
+        System.out.println("教师添加课程："+userDoInfo);
+        return mainService.addMain(userDoInfo);
+    }
+
+    /**
+     * 院长 获取  待确认  课程信息 列表
+     */
+    @PostMapping("getAddMainList")
+    public R getAddMainList(@RequestBody UserCheckParam userCheckParam){
+        return mainService.getAddMainList(userCheckParam);
     }
 
     /**
@@ -229,6 +238,8 @@ public class MainController {
     }
 
     //todo：修改接口
+
+
 
 
 

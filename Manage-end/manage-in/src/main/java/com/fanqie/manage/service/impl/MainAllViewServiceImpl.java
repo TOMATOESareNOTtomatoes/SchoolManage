@@ -48,4 +48,15 @@ public class MainAllViewServiceImpl extends ServiceImpl<MainAllViewMapper, MainA
         return mapper.selectList(wrapper);
     }
 
+    /**
+     * 根据条件查询
+     *
+     * @param wrapper
+     * @return
+     */
+    @Override
+    public List<MainAllView> selectList(QueryWrapper<MainAllView> wrapper) {
+        return mapper.selectList(wrapper);
+    }
+
 }
