@@ -650,21 +650,28 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
                     additionalMainWrapper.eq("additional_id", mainAllView.getUniqueNumber());
                     AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
-                    String additionalCoefficientsId = additionalMain.getAdditionalCoefficientsId();
                     userDoInfo userDoInfo = new userDoInfo();
                     userDoInfo.setUniqueNumber(mainAllView.getUniqueNumber());
                     userDoInfo.setIsFirst(0);
                     userDoInfo.setIsDoubleLanguage(0);
                     userDoInfo.setIsWeekend(0);
-                    int ccc = Integer.parseInt(additionalCoefficientsId);
-                    if ((ccc / 100) == 1) {
-                        userDoInfo.setIsFirst(0.1);
-                    }
-                    if (((ccc / 10) % 10) == 1) {
-                        userDoInfo.setIsDoubleLanguage(1.5);
-                    }
-                    if ((ccc % 10) == 1) {
-                        userDoInfo.setIsWeekend(1.1);
+                    userDoInfo.setUserName(mainAllView.getUserName());
+                    userDoInfo.setClassName(mainAllView.getClassName());
+                    userDoInfo.setClassNumber(mainAllView.getClassNumber());
+                    userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
+                    userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
+                    if(additionalMain!=null){
+                        String additionalCoefficientsId = additionalMain.getAdditionalCoefficientsId();
+                        int ccc = Integer.parseInt(additionalCoefficientsId);
+                        if ((ccc / 100) == 1) {
+                            userDoInfo.setIsFirst(0.1);
+                        }
+                        if (((ccc / 10) % 10) == 1) {
+                            userDoInfo.setIsDoubleLanguage(1.5);
+                        }
+                        if ((ccc % 10) == 1) {
+                            userDoInfo.setIsWeekend(1.1);
+                        }
                     }
                     return userDoInfo;
                 })
