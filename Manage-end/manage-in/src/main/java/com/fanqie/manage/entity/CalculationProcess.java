@@ -11,7 +11,7 @@ import java.util.Date;
 
 /**
  * <p>
- * 
+ *        保存计算过程的系数的
  * </p>
  *
  * @author fq
@@ -53,12 +53,12 @@ public class CalculationProcess implements Serializable {
     /**
      * 理论学时系数
      */
-    private Double coefficientTheoretical;
+    private String coefficientTheoretical;
 
     /**
      * 实践学时系数
      */
-    private Double coefficientPractical;
+    private String coefficientPractical;
 
     /**
      * 逻辑删除；0表示未删除；1表示删除

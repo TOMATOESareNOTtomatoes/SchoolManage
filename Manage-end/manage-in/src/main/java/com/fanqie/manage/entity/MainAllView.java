@@ -97,6 +97,11 @@ public class MainAllView implements Serializable {
     private String teachType;
 
     /**
+     * 工作量结果
+     */
+    private String caseload;
+
+    /**
      * 表里没有的属性。
      * 实时计算出的 结果。不一定是最终的。
      */

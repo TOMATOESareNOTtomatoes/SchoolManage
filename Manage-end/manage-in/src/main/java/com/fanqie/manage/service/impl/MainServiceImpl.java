@@ -388,7 +388,6 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         //先确认是否存在特殊情况，且不是修改或者添加的。
         //TODO:,应该创建新方法的，偷懒了，通过用户id查询比较符合逻辑
         Main main = mainMapper.selectByUniqueNumber(userDoInfo.getUniqueNumber());
-
         //说明存在特殊情况申请，需要检查是否 通过
         if (main.getAdditionalId() != null) {
             //通过additionalId查询是否存在未确认的特殊情况申请，存在的话，则需要进一步确认，申请是否通过
@@ -400,7 +399,6 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 }
             }
         }
-
         //TODO：因为是这个逻辑，所以要在院长通过哪里再设置一次计算过程
         //添加类型查询出来没有用上，如果是手动添加的话，不需要 教师 手动 确认 管理员同意就直接算是确认了。
 
@@ -411,8 +409,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         calculationProcess.setIsFirst(userDoInfo.getIsFirst());
         calculationProcess.setIsDoubleLanguage(userDoInfo.getIsDoubleLanguage());
         calculationProcess.setIsWeekend(userDoInfo.getIsWeekend());
-        calculationProcess.setCoefficientPractical(Double.valueOf(userDoInfo.getCoefficientL()));//理论学时系数
-        calculationProcess.setCoefficientTheoretical(Double.valueOf(userDoInfo.getCoefficientS()));//实践学时系数
+        calculationProcess.setCoefficientPractical(userDoInfo.getCoefficientL());//理论学时系数
+        calculationProcess.setCoefficientTheoretical(userDoInfo.getCoefficientS());//实践学时系数
         calculationProcessService.Insert(calculationProcess);//添加记录
         //理论学时*（系数+是否新课+班级人数是否超标）*是否双语*是否周末  +  实验学时*（系数+是否新课+班级人数是否超标）*是否周末
 
@@ -427,7 +425,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     }
 
     /**
-     * 修改为管理员的  确认用户特殊请求
+     * 修改为 管理员的  确认用户特殊请求
      *
      * @return 特殊情况申请列表
      */
