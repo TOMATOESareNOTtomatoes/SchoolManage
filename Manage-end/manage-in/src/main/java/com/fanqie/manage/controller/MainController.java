@@ -201,6 +201,14 @@ public class MainController {
     }
 
     /**
+     * 管理员 获取  待确认  课程信息 列表
+     */
+    @PostMapping("getAddMainListA")
+    public R getAddMainListA(){
+        return mainService.getAddMainListA();
+    }
+
+    /**
      * 院长 同意 课程信息
      */
     @PostMapping("sureAddMain")

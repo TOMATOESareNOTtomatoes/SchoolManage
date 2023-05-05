@@ -482,7 +482,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         main.setTerm(String.valueOf(new Date()));
         main.setUniqueNumber(uNumber);
         main.setUserId(userDoInfo.getUserId());
-        main.setAddType("2");//添加的类型，2 说明是添加的
+        main.setAddType(2);//添加的类型，2 说明是添加的
         int insert = mainMapper.insert(main);
         if (insert != 1) {
             return R.error().message("添加课程信息失败");
@@ -634,15 +634,15 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
      */
     @Override
     public R getAddMainList(UserCheckParam userCheckParam) {
+        System.out.println(userCheckParam);
         QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("add_type", 1, 2)
-                .ne("is_delete", 1)
-                .eq("is_sure", null)
-                .or()
-                .eq("is_sure", 1)
-                .or()
-                .eq("is_sure", 0);
+                .and(wrapper -> wrapper.isNull("is_delete")
+                        .or().ne("is_delete", 1))
+                .and(wrapper -> wrapper.isNull("is_sure")
+                        .or().in("is_sure", 0, 1, 2));
         List<Main> mainList = mainMapper.selectList(queryWrapper);
+        System.out.println("mainList" + mainList);
         List<MainAllView> mainAllViewList = new ArrayList<>();
         for (Main main : mainList) {
             QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
@@ -651,6 +651,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
             mainAllViewList.addAll(list);
         }
+        System.out.println("mainAllViewList" + mainAllViewList);
         List<userDoInfo> userDoInfoList = mainAllViewList.stream()
                 .map(mainAllView -> {
                     QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
@@ -721,5 +722,15 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             }
         }
         return R.ok().message("成功同意了！");
+    }
+
+    /**
+     * 管理员获取 新添加课程 列表
+     *
+     * @return
+     */
+    @Override
+    public R getAddMainListA() {
+        return null;
     }
 }

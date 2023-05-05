@@ -87,6 +87,12 @@ public interface MainService extends IService<Main> {
      * @return
      */
     R sureAddMain(soleAndUser soleAndUser);
+
+    /**
+     * 管理员获取 新添加课程 列表
+     * @return
+     */
+    R getAddMainListA();
 }
 
 

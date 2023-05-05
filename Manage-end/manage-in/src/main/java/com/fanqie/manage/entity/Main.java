@@ -84,7 +84,7 @@ public class Main implements Serializable {
     /**
      * 添加类型：null或者是0，就是管理员导入的数据。1是用户提交修改的。2是用户自己添加的
      */
-    private String addType;
+    private int addType;
 
     /**
      * 修改的话，保留之前的  unique_number
