@@ -276,6 +276,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                         cp1 = coefficientPracticeService.getBYClassNumber(3);
                         doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
                         dou += doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);//单个班上课
+                    }else {
+                        doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()));
                     }
                 }
             } else {
@@ -471,7 +473,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     /**
      * 教师添加课程信息
      *
-     * @param userDoInfo
+     * @param userDoInfo is_sure=3 的话，被当作不存在特殊情况
      * @return
      */
     @Override
@@ -479,6 +481,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         //添加main记录
         String uNumber = UUIDStringUtils.randomUUID();//唯一id
         Main main = new Main();
+        if(!userDoInfo.getIsSure().equals("3")){
+            main.setAdditionalId(uNumber);
+        }
         main.setTerm(String.valueOf(new Date()));
         main.setUniqueNumber(uNumber);
         main.setUserId(userDoInfo.getUserId());
@@ -532,35 +537,38 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 return R.error().message("添加课程信息失败3");
             }
         }
-        //添加特殊情况
-        AdditionalMain additionalMain = new AdditionalMain();
-        additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
-        //TOdo:写成一个方法来调用
-        String number = "";
-        //是第一次授课
-        if (userDoInfo.getIsFirst() == 0.1) {
-            number = "1";
-        } else {
-            number = "0";
+        //添加特殊情况  isSure=3 说明不存在特殊情况。
+        if(!userDoInfo.getIsSure().equals("3")){
+            AdditionalMain additionalMain = new AdditionalMain();
+            additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
+            //TOdo:写成一个方法来调用
+            String number = "";
+            //是第一次授课
+            if (userDoInfo.getIsFirst() == 0.1) {
+                number = "1";
+            } else {
+                number = "0";
+            }
+            //是双语授课
+            if (userDoInfo.getIsDoubleLanguage() == 1.5) {
+                number += "1";
+            } else {
+                number += "0";
+            }
+            if (userDoInfo.getIsWeekend() == 1.1) {
+                number += "1";
+            } else {
+                number += "0";
+            }
+            additionalMain.setAdditionalCoefficientsId(number);
+            //todo:目前是还会再特殊情况里面出现，要想不出现的话，设置成其他值。
+            additionalMain.setIsSure(1);
+            int ami = additionalMainService.getBaseMapper().insert(additionalMain);
+            if (ami != 1) {
+                return R.error().message("添加课程信息失败4");
+            }
         }
-        //是双语授课
-        if (userDoInfo.getIsDoubleLanguage() == 1.5) {
-            number += "1";
-        } else {
-            number += "0";
-        }
-        if (userDoInfo.getIsWeekend() == 1.1) {
-            number += "1";
-        } else {
-            number += "0";
-        }
-        additionalMain.setAdditionalCoefficientsId(number);
-        //todo:目前是还会再特殊情况里面出现，要想不出现的话，设置成其他值。
-        additionalMain.setIsSure(1);
-        int ami = additionalMainService.getBaseMapper().insert(additionalMain);
-        if (ami != 1) {
-            return R.error().message("添加课程信息失败4");
-        }
+
         return R.ok().message("添加课程信息成功！");
     }
 
