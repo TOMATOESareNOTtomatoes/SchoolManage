@@ -254,6 +254,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             //  TheoreticalHours 理论学时  ，为零，说明全是实验，当作上机
             if (view.getTheoreticalHours() == null || view.getTheoreticalHours().equals("") ||
                     view.getTheoreticalHours().equals("0")) {
+                doInfo.setCoefficientL("0");
                 //全实践课，查看根据班级情况，返回实践课内容
                 CoefficientPractice cp;
                 CoefficientPractice cp1;//因为重复的系数不一样，创建了两个变量，虽然一个也可以。
@@ -276,7 +277,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                         cp1 = coefficientPracticeService.getBYClassNumber(3);
                         doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
                         dou += doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);//单个班上课
-                    }else {
+                    } else {
                         doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()));
                     }
                 }
