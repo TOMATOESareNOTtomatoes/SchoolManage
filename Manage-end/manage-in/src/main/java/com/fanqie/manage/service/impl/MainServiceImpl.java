@@ -693,7 +693,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
 
         if (main != null) {
             main.setIsSure(5);
-            main.setUser_plus_id(soleAndUser.getUserId());
+            main.setUserPlusId(soleAndUser.getUserId());
             int i = mainMapper.updateById(main);
             if (i != 1) {
                 return R.error().message("同意失败！");
@@ -755,6 +755,42 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 })
                 .collect(Collectors.toList());
         return R.ok().data("userDoInfoList", userDoInfoList);
+    }
+
+    /**
+     * 管理员同意课程信息
+     *
+     * @param soleAndUser
+     * @return
+     */
+    @Override
+    public R sureAddMainA(soleAndUser soleAndUser) {
+        QueryWrapper<Main> mainQueryWrapper = new QueryWrapper<>();
+        mainQueryWrapper.eq("unique_number", soleAndUser.getSole());
+        Main main = mainMapper.selectOne(mainQueryWrapper);
+
+        QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
+        additionalMainWrapper.eq("additional_id", soleAndUser.getSole());
+        AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
+
+        if (main != null) {
+            main.setIsSure(9);
+            main.setAdminId(soleAndUser.getUserId());
+            int i = mainMapper.updateById(main);
+            if (i != 1) {
+                return R.error().message("同意失败！");
+            }
+        }
+
+        if (additionalMain != null) {
+            additionalMain.setIsSure(9);
+            additionalMain.setAdminId(soleAndUser.getUserId());
+            boolean b = additionalMainService.updateById(additionalMain);
+            if (!b) {
+                return R.error().message("同意失败!！");
+            }
+        }
+        return R.ok().message("成功同意了！");
     }
 
     private userDoInfo getUserDoInfo(AdditionalMain additionalMain, userDoInfo userDoInfo) {

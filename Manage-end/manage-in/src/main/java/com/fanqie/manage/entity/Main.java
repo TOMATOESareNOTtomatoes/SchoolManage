@@ -69,12 +69,12 @@ public class Main implements Serializable {
     /**
      * 院系同意人的id
      */
-    private String user_plus_id;
+    private String userPlusId;
 
     /**
      * 管理员同意人的id
      */
-    private String admin_id;
+    private String adminId;
 
     /**
      *   备注
