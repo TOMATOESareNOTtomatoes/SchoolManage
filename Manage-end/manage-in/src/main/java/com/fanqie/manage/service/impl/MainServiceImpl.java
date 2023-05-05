@@ -658,6 +658,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     userDoInfo.setUserName(mainAllView.getUserName());
                     userDoInfo.setClassName(mainAllView.getClassName());
                     userDoInfo.setClassNumber(mainAllView.getClassNumber());
+                    userDoInfo.setTeachName(mainAllView.getTeachName());
                     userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
                     userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
                     if(additionalMain!=null){
