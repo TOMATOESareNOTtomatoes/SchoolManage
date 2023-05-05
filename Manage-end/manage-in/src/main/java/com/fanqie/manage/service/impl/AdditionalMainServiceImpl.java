@@ -74,7 +74,7 @@ public class AdditionalMainServiceImpl extends ServiceImpl<AdditionalMainMapper,
      * 修改表的数据
      *
      * @param soleAndUser 有三个属性  id userId faculty
-     * @return 修改的数量
+     * @return 修改的数量  确认值为 5
      */
     @Override
     public int updateByAdditionalId(soleAndUser soleAndUser) {
@@ -83,7 +83,21 @@ public class AdditionalMainServiceImpl extends ServiceImpl<AdditionalMainMapper,
                 .set("user_plus_id", soleAndUser.getUserId())
                 .set("is_sure", 5));
         return count;
+    }
 
+    /**
+     * 修改表的数据
+     *
+     * @param soleAndUser 有三个属性  id userId faculty
+     * @return 修改的数量  确认值为  9
+     */
+    @Override
+    public int updateByAdditionalIdA(soleAndUser soleAndUser) {
+        int count = mapper.update(null, new UpdateWrapper<AdditionalMain>()
+                .eq("additional_id", soleAndUser.getSole())
+                .set("admin_id", soleAndUser.getUserId())
+                .set("is_sure", 9));
+        return count;
     }
 
 

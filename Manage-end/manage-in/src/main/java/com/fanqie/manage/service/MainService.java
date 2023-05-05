@@ -53,7 +53,12 @@ public interface MainService extends IService<Main> {
 
     R getAdditionalSureA();
 
-    R AdditionalSureA(acSure acSure);
+    /**
+     * 管理员 同意教师的特殊情况 申请接口
+     * @param soleAndUser
+     * @return
+     */
+    R AdditionalSureA(soleAndUser soleAndUser);
 
     R AdditionalUnSureA(acSure acSure);
 

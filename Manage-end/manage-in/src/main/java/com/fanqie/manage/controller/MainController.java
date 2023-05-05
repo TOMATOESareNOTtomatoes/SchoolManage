@@ -158,14 +158,14 @@ public class MainController {
 
     /**
      * 通过教师的特殊申请  管理员
-     * @param acSure
+     * @param soleAndUser
      * @return
      */
     @PostMapping("AdditionalSureA")
     @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
-    public R AdditionalSureA(@RequestBody acSure acSure){
-        System.out.println("G同意教师的特殊申请！"+acSure);
-        return mainService.AdditionalSureA(acSure);
+    public R AdditionalSureA(@RequestBody soleAndUser soleAndUser){
+        System.out.println("G同意教师的特殊申请！"+soleAndUser);
+        return mainService.AdditionalSureA(soleAndUser);
     }
 
     /**

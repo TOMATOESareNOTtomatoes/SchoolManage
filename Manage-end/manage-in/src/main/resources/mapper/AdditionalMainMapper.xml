@@ -3,7 +3,7 @@
 <mapper namespace="com.fanqie.manage.mapper.AdditionalMainMapper">
 
     <select id="getAdditionalSure" resultType="com.fanqie.manage.param.acSure">
-        SELECT mav.user_name, mav.teach_name, mav.class_name, ac.is_first, ac.is_double_language, ac.is_weekend
+        SELECT mav.user_name, mav.teach_name,mav.additional_id, mav.class_name, ac.is_first, ac.is_double_language, ac.is_weekend
         FROM additional_main am
                  JOIN main_all_view mav ON am.additional_id = mav.additional_id
                  JOIN additional_coefficients ac ON am.additional_coefficients_id = ac.additional_coefficients_id

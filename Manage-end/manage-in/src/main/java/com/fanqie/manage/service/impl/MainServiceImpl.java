@@ -492,9 +492,18 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         return R.ok().message("接口正常");
     }
 
+    /**
+     * 管理员 同意 特殊情况申请
+     * @param soleAndUser
+     * @return
+     */
     @Override
-    public R AdditionalSureA(acSure acSure) {
-        return R.ok().message("接口正常");
+    public R AdditionalSureA(soleAndUser soleAndUser) {
+        int i = additionalMainService.updateByAdditionalIdA(soleAndUser);
+        if (i == 1) {
+            return R.ok().message("同意成功！");
+        }
+        return R.error().message("修改失败！");
     }
 
     @Override

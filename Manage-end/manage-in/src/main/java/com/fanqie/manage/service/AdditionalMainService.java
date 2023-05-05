@@ -43,4 +43,11 @@ public interface AdditionalMainService extends IService<AdditionalMain> {
      * @return 修改的数量
      */
     int updateByAdditionalId(soleAndUser soleAndUser);
+
+    /**
+     * 修改表的数据
+     * @param soleAndUser 有三个属性  id userId faculty
+     * @return 修改的数量
+     */
+    int updateByAdditionalIdA(soleAndUser soleAndUser);
 }
