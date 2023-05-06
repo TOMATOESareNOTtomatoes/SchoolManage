@@ -29,6 +29,11 @@ public class MainController {
     @Autowired
     MainService mainService;
 
+    /**
+     * 管理员  上传  数据
+     * @param file
+     * @return
+     */
     @Permission({PermissionEnum.ADMIN})
     @PostMapping("upload")
     @ResponseBody
@@ -38,6 +43,16 @@ public class MainController {
             return R.error().message("上传的参数为空！");
         }
         return mainService.uploadExcel(file);
+    }
+
+    /**
+     * 查询所有的系数   管理员
+     * @return 几张系数表
+     */
+    @GetMapping("getCoefficient")
+    @Permission({PermissionEnum.ADMIN})
+    public R getCoefficient(){
+        return mainService.getCoefficient();
     }
 
     /**
@@ -62,7 +77,6 @@ public class MainController {
      * @param user
      * @return
      */
-    //@Permission({PermissionEnum.UserPlus})
     @PostMapping("getUserDoInfo")
     public R getUserDoInfo(@RequestBody User user) {
         //System.out.println("getUserDoInfo------:" + user);
@@ -275,7 +289,14 @@ public class MainController {
 
     //todo：修改接口
 
-
+    /**
+     * 管理员   获取总课程信息统计结果，简略版
+     * @return
+     */
+    @GetMapping("simpleAllDo")
+    public R simpleAllDo(){
+        return mainService.simpleAllDo();
+    }
 
 
 

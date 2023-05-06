@@ -107,6 +107,18 @@ public interface MainService extends IService<Main> {
      * @return
      */
     R UserReviseDo(userDoInfo userDoInfo);
+
+    /**
+     * 管理员 获取 简单的 工作量统计 总表
+     * @return 返回的结果只有 4 个
+     */
+    R simpleAllDo();
+
+    /**
+     * 查询系数的接口
+     * @return 全部系数表
+     */
+    R getCoefficient();
 }
 
 

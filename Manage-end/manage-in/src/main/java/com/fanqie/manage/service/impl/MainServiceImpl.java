@@ -71,6 +71,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     private CalculationProcessService calculationProcessService;
     @Autowired
     private AdditionalMainService additionalMainService;
+    @Autowired
+    private MyViewService myViewService;
 
 
     /**
@@ -277,7 +279,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                         //说明是2个班以上，是单数
                         cp1 = coefficientPracticeService.getBYClassNumber(3);
                         doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
-                        dou += doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);//单个班上课
+                        dou += ((doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1))*(view.getClassRow()-1));//单个班上课
                     } else {
                         doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()));
                     }
@@ -948,6 +950,50 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         }
         return R.error().message("查询不到课程信息！！");
     }
+
+    /**
+     * 管理员 获取 简单的 工作量统计 总表
+     *
+     * @return 返回的结果只有 4 个
+     */
+    @Override
+    public R simpleAllDo() {
+        List<MyView> myViews = myViewService.getList();
+        if(myViews.isEmpty()){
+            return R.ok().message("不存在信息");
+        }
+        return R.ok().data("simpleAllDo",myViews);
+    }
+
+    /**
+     * 查询系数的接口
+     *
+     * @return 全部系数表
+     */
+    @Override
+    public R getCoefficient() {
+        List<AdditionalCoefficients> additionalCoefficients = additionalCoefficientsService.list();
+        List<CoefficientExperiment> coefficientExperiments=coefficientExperimentService.list();
+        List<CoefficientPractice> coefficientPractices=coefficientPracticeService.list();
+        List<CoefficientTheory> coefficientTheories=coefficientTheoryService.list();
+        if(additionalCoefficients.isEmpty()){
+            return R.error().message("查询数据出错！additionalCoefficients");
+        }
+        if(coefficientExperiments.isEmpty()){
+            return R.error().message("查询数据出错！coefficientExperiments");
+        }
+        if(coefficientPractices.isEmpty()){
+            return R.error().message("查询数据出错！coefficientPractices");
+        }
+        if(coefficientTheories.isEmpty()){
+            return R.error().message("查询数据出错！coefficientTheories");
+        }
+        return R.ok().data("additionalCoefficients",additionalCoefficients)
+                .data("coefficientExperiments",coefficientExperiments)
+                .data("coefficientPractices",coefficientPractices)
+                .data("coefficientTheories",coefficientTheories);
+    }
+
 
     /**
      * 根据特殊情况 得出特殊情况的 id
