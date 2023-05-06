@@ -279,7 +279,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                         //说明是2个班以上，是单数
                         cp1 = coefficientPracticeService.getBYClassNumber(3);
                         doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
-                        dou += ((doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1))*(view.getClassRow()-1));//单个班上课
+                        dou += ((doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1)) * (view.getClassRow() - 1));//单个班上课
                     } else {
                         doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()));
                     }
@@ -335,7 +335,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             return R.error().message("查询不到课程信息！");
         }
         //根据特殊情况获取特殊情况的id  偷懒了。应该查表的。
-        String number= getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
+        String number = getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
                 userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend());
         if (main.getAdditionalId() == null) {
             //添加记录，
@@ -865,7 +865,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 main.setIsSure(5);//代表院长已经确认
                 int i = mainMapper.update(main, new UpdateWrapper<Main>()
                         .eq("unique_number", userDoInfo.getUniqueNumber()));
-                if(i!=1){
+                if (i != 1) {
                     return R.error().message("院长修改出错！main");
                 }
                 return R.ok().message("院长修改记录成功！");
@@ -959,10 +959,10 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R simpleAllDo() {
         List<MyView> myViews = myViewService.getList();
-        if(myViews.isEmpty()){
+        if (myViews.isEmpty()) {
             return R.ok().message("不存在信息");
         }
-        return R.ok().data("simpleAllDo",myViews);
+        return R.ok().data("simpleAllDo", myViews);
     }
 
     /**
@@ -973,27 +973,94 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R getCoefficient() {
         List<AdditionalCoefficients> additionalCoefficients = additionalCoefficientsService.list();
-        List<CoefficientExperiment> coefficientExperiments=coefficientExperimentService.list();
-        List<CoefficientPractice> coefficientPractices=coefficientPracticeService.list();
-        List<CoefficientTheory> coefficientTheories=coefficientTheoryService.list();
-        if(additionalCoefficients.isEmpty()){
+        List<CoefficientExperiment> coefficientExperiments = coefficientExperimentService.list();
+        List<CoefficientPractice> coefficientPractices = coefficientPracticeService.list();
+        List<CoefficientTheory> coefficientTheories = coefficientTheoryService.list();
+        if (additionalCoefficients.isEmpty()) {
             return R.error().message("查询数据出错！additionalCoefficients");
         }
-        if(coefficientExperiments.isEmpty()){
+        if (coefficientExperiments.isEmpty()) {
             return R.error().message("查询数据出错！coefficientExperiments");
         }
-        if(coefficientPractices.isEmpty()){
+        if (coefficientPractices.isEmpty()) {
             return R.error().message("查询数据出错！coefficientPractices");
         }
-        if(coefficientTheories.isEmpty()){
+        if (coefficientTheories.isEmpty()) {
             return R.error().message("查询数据出错！coefficientTheories");
         }
-        return R.ok().data("additionalCoefficients",additionalCoefficients)
-                .data("coefficientExperiments",coefficientExperiments)
-                .data("coefficientPractices",coefficientPractices)
-                .data("coefficientTheories",coefficientTheories);
+        return R.ok().data("additionalCoefficients", additionalCoefficients)
+                .data("coefficientExperiments", coefficientExperiments)
+                .data("coefficientPractices", coefficientPractices)
+                .data("coefficientTheories", coefficientTheories);
     }
 
+    /**
+     * 管理员  修改系数  理论课部分
+     *
+     * @param coefficientExperiment
+     * @return 修改信息
+     */
+    @Override
+    public R reviseCoefficientExperiment(CoefficientExperiment coefficientExperiment) {
+        QueryWrapper<CoefficientExperiment> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", coefficientExperiment.getId());
+        boolean b = coefficientExperimentService.update(coefficientExperiment, queryWrapper);
+        if(!b){
+            return R.error().message("修改失败");
+        }
+        return R.ok().message("修改成功");
+    }
+
+    /**
+     * 管理员  修改系数  全实践课的
+     *
+     * @param coefficientPractice
+     * @return 修改信息
+     */
+    @Override
+    public R reviseCoefficientPractice(CoefficientPractice coefficientPractice) {
+        QueryWrapper<CoefficientPractice> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", coefficientPractice.getId());
+        boolean b = coefficientPracticeService.update(coefficientPractice, queryWrapper);
+        if(!b){
+            return R.error().message("修改失败");
+        }
+        return R.ok().message("修改成功");
+    }
+
+    /**
+     * 管理员  修改系数  有理论课的实验部分系数
+     *
+     * @param coefficientTheory
+     * @return 修改信息
+     */
+    @Override
+    public R reviseCoefficientTheory(CoefficientTheory coefficientTheory) {
+        QueryWrapper<CoefficientTheory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", coefficientTheory.getId());
+        boolean b = coefficientTheoryService.update(coefficientTheory, queryWrapper);
+        if(!b){
+            return R.error().message("修改失败");
+        }
+        return R.ok().message("修改成功");
+    }
+
+    /**
+     * 管理员  修改系数  特殊情况的
+     *
+     * @param ac
+     * @return 修改信息
+     */
+    @Override
+    public R reviseACoefficient(AdditionalCoefficients ac) {
+        QueryWrapper<AdditionalCoefficients> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", ac.getId());
+        boolean b = additionalCoefficientsService.update(ac, queryWrapper);
+        if(!b){
+            return R.error().message("修改失败");
+        }
+        return R.ok().message("修改成功");
+    }
 
     /**
      * 根据特殊情况 得出特殊情况的 id

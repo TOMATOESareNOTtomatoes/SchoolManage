@@ -3,7 +3,7 @@ package com.fanqie.manage.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.R;
-import com.fanqie.manage.entity.Main;
+import com.fanqie.manage.entity.*;
 import com.fanqie.manage.param.acSure;
 import com.fanqie.manage.param.soleAndUser;
 import com.fanqie.manage.param.userDoInfo;
@@ -119,6 +119,30 @@ public interface MainService extends IService<Main> {
      * @return 全部系数表
      */
     R getCoefficient();
+
+    /**
+     * 管理员  修改系数  理论课部分
+     * @return 修改信息
+     */
+    R reviseCoefficientExperiment(CoefficientExperiment coefficientExperiment);
+
+    /**
+     * 管理员  修改系数  全实践课的
+     * @return 修改信息
+     */
+    R reviseCoefficientPractice(CoefficientPractice coefficientPractice);
+
+    /**
+     * 管理员  修改系数  有理论课的实验部分系数
+     * @return 修改信息
+     */
+    R reviseCoefficientTheory(CoefficientTheory coefficientTheory);
+
+    /**
+     * 管理员  修改系数  特殊情况的
+     * @return 修改信息
+     */
+    R reviseACoefficient(AdditionalCoefficients ac);
 }
 
 

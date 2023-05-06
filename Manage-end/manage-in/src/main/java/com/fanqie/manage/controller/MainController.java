@@ -4,8 +4,7 @@ import com.fanqie.commonutils.param.UserCheckParam;
 import com.fanqie.commonutils.utils.Permission;
 import com.fanqie.commonutils.utils.PermissionEnum;
 import com.fanqie.commonutils.utils.R;
-import com.fanqie.manage.entity.Main;
-import com.fanqie.manage.entity.User;
+import com.fanqie.manage.entity.*;
 import com.fanqie.manage.param.acSure;
 import com.fanqie.manage.param.soleAndUser;
 import com.fanqie.manage.param.userDoInfo;
@@ -53,6 +52,46 @@ public class MainController {
     @Permission({PermissionEnum.ADMIN})
     public R getCoefficient(){
         return mainService.getCoefficient();
+    }
+
+    /**
+     * 管理员  修改系数  理论课部分
+     * @return 修改信息
+     */
+    @PostMapping("CoefficientExperiment")
+    @Permission({PermissionEnum.ADMIN})
+    public R CExperiment(@RequestBody CoefficientExperiment coefficientExperiment){
+        return mainService.reviseCoefficientExperiment(coefficientExperiment);
+    }
+
+    /**
+     * 管理员  修改系数  全实践课的
+     * @return 修改信息
+     */
+    @PostMapping("CoefficientPractice")
+    @Permission({PermissionEnum.ADMIN})
+    public R CPractice(@RequestBody CoefficientPractice coefficientPractice){
+        return mainService.reviseCoefficientPractice(coefficientPractice);
+    }
+
+    /**
+     * 管理员  修改系数  有理论课的实验部分系数
+     * @return 修改信息
+     */
+    @PostMapping("CoefficientTheory")
+    @Permission({PermissionEnum.ADMIN})
+    public R CTheory(@RequestBody CoefficientTheory coefficientTheory){
+        return mainService.reviseCoefficientTheory(coefficientTheory);
+    }
+
+    /**
+     * 管理员  修改系数  特殊情况的
+     * @return 修改信息
+     */
+    @PostMapping("ACoefficient")
+    @Permission({PermissionEnum.ADMIN})
+    public R ACoefficient(@RequestBody AdditionalCoefficients ac){
+        return mainService.reviseACoefficient(ac);
     }
 
     /**
