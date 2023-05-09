@@ -38,7 +38,11 @@ public class AdditionalMainServiceImpl extends ServiceImpl<AdditionalMainMapper,
         return mapper.selectOne(
                 new QueryWrapper<AdditionalMain>()
                         .eq("additional_id", additional)
-                        .eq("is_delete", 0)
+                        .and(wrapper -> wrapper
+                                .isNull("is_delete")
+                                .or()
+                                .ne("is_delete", 1)
+                        )
                         .and(wrapper -> wrapper
                                 .eq("is_sure", 1)
                                 .or()

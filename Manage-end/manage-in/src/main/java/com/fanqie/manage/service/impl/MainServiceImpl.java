@@ -215,7 +215,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             }
             //将部分信息直接复制过来
             userDoInfo doInfo = new userDoInfo();
-            doInfo.setIsSure("0");//设置未确认
+            //doInfo.setIsSure("0");//设置未确认
+            doInfo.setIsSure(String.valueOf(view.getIsSure()));//设置未确认
             //直接赋值
             doInfo.setUserId(view.getUserId());
             doInfo.setUserName(view.getUserName());
@@ -241,12 +242,18 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             }
             if (am != null) {
                 //通过唯一 id 查询 返回特殊情况的系数
+                System.out.println("获取教师个人工作量，系数id：" + am.getAdditionalCoefficientsId());
                 AdditionalCoefficients additionalCoefficients = additionalCoefficientsService.selectByAdditionalId(am.getAdditionalCoefficientsId());//查询系数
-                doInfo.setIsFirst(additionalCoefficients.getIsFirst());
-                doInfo.setIsDoubleLanguage(additionalCoefficients.getIsDoubleLanguage());
-                doInfo.setIsWeekend(additionalCoefficients.getIsWeekend());
+                if (additionalCoefficients != null) {
+                    doInfo.setIsFirst(additionalCoefficients.getIsFirst());
+                    doInfo.setIsDoubleLanguage(additionalCoefficients.getIsDoubleLanguage());
+                    doInfo.setIsWeekend(additionalCoefficients.getIsWeekend());
+                } else {
+                    System.out.println("根据id查询课程信息的特殊情况查询异常！！");
+                }
+
             } else {//默认就没有系数
-                System.out.println("没查到特殊情况");
+                //System.out.println("没查到特殊情况");
                 doInfo.setIsFirst(0);//这个是加的系数，所以要设置为零
                 doInfo.setIsDoubleLanguage(1);//这些是乘的
                 doInfo.setIsWeekend(1);
@@ -290,7 +297,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 CoefficientExperiment ce;//理论表系数
                 if (view.getClassRow() <= 4) {
                     //四个班以下
-                    System.out.println("班级数量；" + view.getClassRow());
+                    //System.out.println("班级数量；" + view.getClassRow());
                     ce = coefficientExperimentService.getByClassNumber(view.getClassRow());
                 } else { //四个班以上，按照四个班算
                     ce = coefficientExperimentService.getByClassNumber(4);
@@ -300,7 +307,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
 
                 doInfo.setCoefficientL(String.valueOf(ce.getCoefficient()));//设置理论系数
                 CoefficientTheory ct = coefficientTheoryService.getByClassNumber(1);//有理论的，实验系数
-                System.out.println("ct:" + ct.getCoefficient());
+                //System.out.println("有理论课的实验系数:" + ct.getCoefficient());
                 doInfo.setCoefficientS(String.valueOf(ct.getCoefficient()));
                 dou += doInfo.getPracticalHours() * (ct.getCoefficient() + doInfo.getIsFirst() + classCoefficient);
                 CoefficientTheory ct1;
@@ -333,6 +340,11 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         Main main = mainMapper.selectByUniqueNumber(userDoInfo.getUniqueNumber());
         if (main == null) {
             return R.error().message("查询不到课程信息！");
+        }
+        if (main.getIsSure() != null) {
+            if (main.getIsSure() == 1 || main.getIsSure() == 9) {
+                return R.error().message("该课程信息已被确认！不能添加特殊情况！");
+            }
         }
         //根据特殊情况获取特殊情况的id  偷懒了。应该查表的。
         String number = getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
@@ -427,7 +439,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     }
 
     /**
-     * 修改为 管理员的  确认用户特殊请求
+     * 管理员的  获取用户特殊请求
      *
      * @return 特殊情况申请列表
      */
@@ -442,6 +454,12 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         return R.ok().message("成功查询").data("AdditionalSure", ac);
     }
 
+    /**
+     * 院长  同意特殊情况
+     *
+     * @param soleAndUser
+     * @return
+     */
     @Override
     public R AdditionalSure(soleAndUser soleAndUser) {
         int i = additionalMainService.updateByAdditionalId(soleAndUser);
@@ -451,9 +469,30 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         return R.error().message("修改失败！");
     }
 
+    /**
+     * 院长  不通过  用户的特殊情况申请  处理逻辑：
+     * 院长自己修改了用户的特殊情况申请。
+     * 添加院长的id
+     * 修改代表已经确认了  is_sure=5
+     *
+     * @param ac
+     * @return
+     */
     @Override
     public R AdditionalUnSure(acSure ac) {
-        return null;
+        AdditionalMain additionalMain = additionalMainService.getByAdditionalId(ac.getAdditionalId());
+        if (additionalMain == null) {
+            return R.error().message("查询不到该特殊情况记录！！！");
+        }
+        additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(ac.getIsFirst(), ac.getIsDoubleLanguage(), ac.getIsWeekend()));
+        additionalMain.setUserPlusId(ac.getUserId());
+        additionalMain.setIsSure(5);
+
+        boolean b = additionalMainService.updateById(additionalMain);
+        if (b) {
+            return R.ok().message("成功修改了教师的特殊情况信息！！");
+        }
+        return R.error().message("修改失败！！！");
     }
 
     /**
@@ -527,26 +566,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         if (!userDoInfo.getIsSure().equals("3")) {
             AdditionalMain additionalMain = new AdditionalMain();
             additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
-            //TOdo:写成一个方法来调用
-            String number = "";
-            //是第一次授课
-            if (userDoInfo.getIsFirst() == 0.1) {
-                number = "1";
-            } else {
-                number = "0";
-            }
-            //是双语授课
-            if (userDoInfo.getIsDoubleLanguage() == 1.5) {
-                number += "1";
-            } else {
-                number += "0";
-            }
-            if (userDoInfo.getIsWeekend() == 1.1) {
-                number += "1";
-            } else {
-                number += "0";
-            }
-            additionalMain.setAdditionalCoefficientsId(number);
+
+            additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(userDoInfo.getIsFirst(), userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend()));
             //todo:目前是还会再特殊情况里面出现，要想不出现的话，设置成其他值。
             additionalMain.setIsSure(1);
             int ami = additionalMainService.getBaseMapper().insert(additionalMain);
@@ -558,30 +579,17 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         return R.ok().message("添加课程信息成功！");
     }
 
+    /**
+     * 院长 修改 用户的 课程信息。
+     *
+     * @param main
+     * @return
+     */
     @Override
     public R upDataByMain(Main main) {
         return R.ok().message("接口正常");
     }
 
-    @Override
-    public R getCExperiment() {
-        return R.ok().message("接口正常");
-    }
-
-    @Override
-    public R getCTheory() {
-        return R.ok().message("接口正常");
-    }
-
-    @Override
-    public R getCPractice() {
-        return R.ok().message("接口正常");
-    }
-
-    @Override
-    public R getAdditionalSureA() {
-        return R.ok().message("接口正常");
-    }
 
     /**
      * 管理员 同意 特殊情况申请
@@ -618,55 +626,6 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             return R.ok().message("不存在未确认的申请！！");
         }
         return R.ok().data("AdditionalSure", acSureList);
-    }
-
-    /**
-     * 获取教师 新添加 的课程信息
-     *
-     * @param userCheckParam
-     * @return
-     */
-    @Override
-    public R getAddMainList(UserCheckParam userCheckParam) {
-        System.out.println(userCheckParam);
-        QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("add_type", 1, 2)
-                .and(wrapper -> wrapper.isNull("is_delete")
-                        .or().ne("is_delete", 1))
-                .and(wrapper -> wrapper.isNull("is_sure")
-                        .or().in("is_sure", 0, 1, 2));
-        List<Main> mainList = mainMapper.selectList(queryWrapper);
-        System.out.println("mainList" + mainList);
-        List<MainAllView> mainAllViewList = new ArrayList<>();
-        for (Main main : mainList) {
-            QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
-            wrapper.eq("unique_number", main.getUniqueNumber());
-            wrapper.eq("faculty", userCheckParam.getFaculty());
-            List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
-            mainAllViewList.addAll(list);
-        }
-        System.out.println("mainAllViewList" + mainAllViewList);
-        List<userDoInfo> userDoInfoList = mainAllViewList.stream()
-                .map(mainAllView -> {
-                    QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
-                    additionalMainWrapper.eq("additional_id", mainAllView.getUniqueNumber());
-                    AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
-                    userDoInfo userDoInfo = new userDoInfo();
-                    userDoInfo.setUniqueNumber(mainAllView.getUniqueNumber());
-                    userDoInfo.setIsFirst(0);
-                    userDoInfo.setIsDoubleLanguage(0);
-                    userDoInfo.setIsWeekend(0);
-                    userDoInfo.setUserName(mainAllView.getUserName());
-                    userDoInfo.setClassName(mainAllView.getClassName());
-                    userDoInfo.setClassNumber(mainAllView.getClassNumber());
-                    userDoInfo.setTeachName(mainAllView.getTeachName());
-                    userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
-                    userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
-                    return getUserDoInfo(additionalMain, userDoInfo);
-                })
-                .collect(Collectors.toList());
-        return R.ok().data("userDoInfoList", userDoInfoList);
-
     }
 
     /**
@@ -708,7 +667,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     /**
      * 管理员获取 新添加课程 列表
      *
-     * @return
+     * @return userDoInFo 队列
      */
     @Override
     public R getAddMainListA() {
@@ -718,7 +677,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                         .or().ne("is_delete", 1))
                 .eq("is_sure", 5);
         List<Main> mainList = mainMapper.selectList(queryWrapper);
-        System.out.println("mainList" + mainList);
+
         List<MainAllView> mainAllViewList = new ArrayList<>();
         for (Main main : mainList) {
             QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
@@ -726,7 +685,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
             mainAllViewList.addAll(list);
         }
-        System.out.println("mainAllViewList" + mainAllViewList);
+
         List<userDoInfo> userDoInfoList = mainAllViewList.stream()
                 .map(mainAllView -> {
                     QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
@@ -748,6 +707,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     return getUserDoInfo(additionalMain, userDoInfo);
                 })
                 .collect(Collectors.toList());
+        System.out.println("管理员的确认队列：\n" + userDoInfoList);
         return R.ok().data("userDoInfoList", userDoInfoList);
     }
 
@@ -840,9 +800,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
 
                 AdditionalMain additionalMain = additionalMainService.getOne(new QueryWrapper<AdditionalMain>()
                         .eq("additional_id", userDoInfo.getUniqueNumber())
-                        .isNull("is_delete")
-                        .or()
-                        .eq("is_delete", 0)
+                        .ne("is_delete", 1)
                 );
                 if (additionalMain != null) {
                     //说明本来存在特殊情况。
@@ -1005,7 +963,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         QueryWrapper<CoefficientExperiment> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", coefficientExperiment.getId());
         boolean b = coefficientExperimentService.update(coefficientExperiment, queryWrapper);
-        if(!b){
+        if (!b) {
             return R.error().message("修改失败");
         }
         return R.ok().message("修改成功");
@@ -1022,7 +980,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         QueryWrapper<CoefficientPractice> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", coefficientPractice.getId());
         boolean b = coefficientPracticeService.update(coefficientPractice, queryWrapper);
-        if(!b){
+        if (!b) {
             return R.error().message("修改失败");
         }
         return R.ok().message("修改成功");
@@ -1039,7 +997,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         QueryWrapper<CoefficientTheory> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", coefficientTheory.getId());
         boolean b = coefficientTheoryService.update(coefficientTheory, queryWrapper);
-        if(!b){
+        if (!b) {
             return R.error().message("修改失败");
         }
         return R.ok().message("修改成功");
@@ -1056,11 +1014,150 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         QueryWrapper<AdditionalCoefficients> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", ac.getId());
         boolean b = additionalCoefficientsService.update(ac, queryWrapper);
-        if(!b){
+        if (!b) {
             return R.error().message("修改失败");
         }
         return R.ok().message("修改成功");
     }
+
+    /**
+     * 院长 修改 课程信息
+     *
+     * @param userDoInfo
+     * @return
+     */
+    @Override
+    public R reviseAddMain(userDoInfo userDoInfo) {
+
+        return null;
+    }
+
+    /**
+     * 院长 获取新课列表
+     *
+     * @param userCheckParam
+     * @return
+     */
+    @Override
+    public R yList(UserCheckParam userCheckParam) {
+        QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
+        List<MainAllView> mainAllViewList = new ArrayList<MainAllView>();
+        List<userDoInfo> userDoInfoList = new ArrayList<userDoInfo>();
+
+        queryWrapper.in("add_type", 1, 2)
+                .and(wrapper -> wrapper.isNull("is_delete")
+                        .or().ne("is_delete", 1))
+                .and(wrapper -> wrapper.isNull("is_sure")
+                        .or().in("is_sure", 0, 1, 2));
+        List<Main> mainList = mainMapper.selectList(queryWrapper);
+        //System.out.println("mainList\n");
+        //System.out.println(mainList);
+        if (mainList == null) {
+            R.ok().message("不存在待确认的课程信息！！！");
+        }
+        for (Main main : mainList) {
+            QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
+            wrapper.eq("unique_number", main.getUniqueNumber());
+            wrapper.eq("faculty", userCheckParam.getFaculty());
+            List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
+            mainAllViewList.addAll(list);
+        }
+
+        for (MainAllView mainAllView : mainAllViewList) {
+            userDoInfo userDoInfo = new userDoInfo();
+            //设置特殊情况默认值
+            userDoInfo.setIsFirst(0);
+            userDoInfo.setIsDoubleLanguage(0);
+            userDoInfo.setIsWeekend(0);
+            QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
+            additionalMainWrapper.eq("additional_id", mainAllView.getUniqueNumber());
+            AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
+            //设置 特殊情况
+            if (additionalMain != null) {
+                getUserDoInfo(additionalMain, userDoInfo);
+            }
+            userDoInfo.setUniqueNumber(mainAllView.getUniqueNumber());
+            userDoInfo.setUserName(mainAllView.getUserName());
+            userDoInfo.setClassName(mainAllView.getClassName());
+            userDoInfo.setClassNumber(mainAllView.getClassNumber());
+            userDoInfo.setTeachName(mainAllView.getTeachName());
+            userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
+            userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
+            userDoInfoList.add(userDoInfo);
+        }
+        if (userDoInfoList.isEmpty()) {
+            R.ok().message("不存在待确认的课程信息！！！");
+        }
+        //System.out.println("userDoInfoList\n");
+        //System.out.println(userDoInfoList);
+        return R.ok().data("list", userDoInfoList).data("l",null).message("成功");
+    }
+
+    /**
+     * 获取教师 新添加 的课程信息  院长
+     *
+     * @param userCheckParam
+     * @return
+     */
+    @Override
+    public R getAddMainList(UserCheckParam userCheckParam) {
+        try {
+            QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
+            queryWrapper.in("add_type", 1, 2)
+                    .and(wrapper -> wrapper.isNull("is_delete")
+                            .or().ne("is_delete", 1))
+                    .and(wrapper -> wrapper.isNull("is_sure")
+                            .or().in("is_sure", 0, 1, 2));
+            List<Main> mainList = mainMapper.selectList(queryWrapper);
+            //根据main表上面的添加类型信息，判断是添加的  并且未被删除  并且未被确认过的 信息
+            List<MainAllView> mainAllViewList = new ArrayList<>();
+            for (Main main : mainList) {
+                QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
+                wrapper.eq("unique_number", main.getUniqueNumber());
+                wrapper.eq("faculty", userCheckParam.getFaculty());
+                List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
+                mainAllViewList.addAll(list);
+            }
+            //todo：修改。。去视图哪里查询 获得课程信息等待，理论上应该分别查询表的 偷懒了
+            List<userDoInfo> userDoInfoList = mainAllViewList.stream()
+                    .map(mainAllView -> {
+                        userDoInfo userDoInfo = new userDoInfo();
+                        //设置特殊情况默认值
+                        userDoInfo.setIsFirst(0);
+                        userDoInfo.setIsDoubleLanguage(0);
+                        userDoInfo.setIsWeekend(0);
+                        QueryWrapper<AdditionalMain> additionalMainWrapper = new QueryWrapper<>();
+                        additionalMainWrapper.eq("additional_id", mainAllView.getUniqueNumber());
+                        AdditionalMain additionalMain = additionalMainService.getOne(additionalMainWrapper);
+                        //设置 特殊情况
+                        if (additionalMain != null) {
+                            getUserDoInfo(additionalMain, userDoInfo);
+                        }
+                        userDoInfo.setUniqueNumber(mainAllView.getUniqueNumber());
+                        userDoInfo.setUserName(mainAllView.getUserName());
+                        userDoInfo.setClassName(mainAllView.getClassName());
+                        userDoInfo.setClassNumber(mainAllView.getClassNumber());
+                        userDoInfo.setTeachName(mainAllView.getTeachName());
+                        userDoInfo.setPracticalHours(Integer.parseInt(mainAllView.getPracticalHours()));
+                        userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
+                        return getUserDoInfo(additionalMain, userDoInfo);
+                    })
+                    .collect(Collectors.toList());
+            //System.out.println("院长的队列：\n" + userDoInfoList);
+            return R.ok().message("有数据的！！！").data("userDoInfoList", userDoInfoList);
+
+        } catch (NullPointerException e) {
+            System.out.println("NullPointerException occurred: " + e.getMessage());
+            return R.error().message("NullPointerException occurred: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("NumberFormatException occurred: " + e.getMessage());
+            return R.error().message("NumberFormatException occurred: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("An error occurred: " + e.getMessage());
+            return R.error().message("An error occurred: " + e.getMessage());
+        }
+    }
+
 
     /**
      * 根据特殊情况 得出特殊情况的 id
@@ -1095,9 +1192,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     /**
      * 将 特殊情况的 id  解析为对应的 情况  理论上应该根据 id查询表，然后 得出的
      *
-     * @param additionalMain
-     * @param userDoInfo
-     * @return
+     * @param additionalMain 特殊情况对象。
+     * @param userDoInfo     数据传输的一个封装类
+     * @return userDoInfo
      */
     private userDoInfo getUserDoInfo(AdditionalMain additionalMain, userDoInfo userDoInfo) {
         if (additionalMain != null) {

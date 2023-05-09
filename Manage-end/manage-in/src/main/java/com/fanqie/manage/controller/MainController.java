@@ -112,13 +112,13 @@ public class MainController {
     }
 
     /**
-     * 教师自己查看自己的课程信息。
+     * 用户iu 自己查看自己的课程信息。
      * @param user
      * @return
      */
     @PostMapping("getUserDoInfo")
     public R getUserDoInfo(@RequestBody User user) {
-        //System.out.println("getUserDoInfo------:" + user);
+        System.out.println("用户查看自己的课程信息接口参数：------:" + user);
         if (user == null || user.getUserId() == null) {
             R.error().message("参数有误@！！");
         }
@@ -126,7 +126,7 @@ public class MainController {
     }
 
     /**
-     * 用户自己补充特殊情况，新课等等这些。
+     * 用户  自己补充特殊情况，新课 等等这些。
      * @param userDoInfo
      * @return
      */
@@ -137,7 +137,7 @@ public class MainController {
     }
 
     /**
-     * 用户确认课程工作量信息
+     * 用户  确认课程 工作量信息
      * @param userDoInfo
      * @return
      */
@@ -189,7 +189,7 @@ public class MainController {
     }
 
     /**
-     * 不通过教师的特殊申请。
+     * 院长  不通过教师的特殊申请。
      * @param acSure
      * @return
      */
@@ -201,23 +201,6 @@ public class MainController {
         return mainService.AdditionalUnSure(acSure);
     }
 //  @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
-
-    /**
-     * todo：加个教师课程信息错误提交，搞个简单的统计结果表，就是全部教职工的工作量情况（只有名字、院系、总工作量）三个属性。
-     * todo：1、教务处同意后，回复用户特定的通知、2修改某一教师的课程信息，课时等等。3、（这个感觉必要）管理员可以修改课程的系数
-     */
-    //实现教师课程错误信息提交申请。根据教师的id查询课程信息，课程信息提交申请。
-    // 要新建表。教务处确认。删除原表信息，添加新的课程信息
-
-    /**
-     * 用来给教务处人员确认教师特殊情况申请的。管理员确认特殊情况用表。
-     * @return 特殊情况申请列表
-     */
-    @GetMapping("getAdditionalSureA")
-    @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
-    public R getAdditionalSureA(){
-        return mainService.getAdditionalSureA();
-    }
 
     /**
      * 通过教师的特殊申请  管理员
@@ -258,9 +241,17 @@ public class MainController {
     /**
      * 院长 获取  待确认  课程信息 列表
      */
-    @PostMapping("getAddMainList")
+    @PostMapping("lAddMainList")
+    @Permission({PermissionEnum.ADMIN,PermissionEnum.UserPlus})
     public R getAddMainList(@RequestBody UserCheckParam userCheckParam){
+//        return R.ok().message("成功").data("userDoInfoList",null);
         return mainService.getAddMainList(userCheckParam);
+    }
+
+    @PostMapping("YList")
+    public R yList(@RequestBody UserCheckParam userCheckParam){
+        System.out.println("接口调用了。");
+        return mainService.yList(userCheckParam);
     }
 
     /**
@@ -278,6 +269,15 @@ public class MainController {
     public R sureAddMain(@RequestBody soleAndUser soleAndUser){
         System.out.println("院长确认课程信息："+soleAndUser);
         return mainService.sureAddMain(soleAndUser);
+    }
+
+    /**
+     * 院长 修改 课程信息
+     */
+    @PostMapping("reviseAddMain")
+    public R reviseAddMain(@RequestBody userDoInfo userDoInfo){
+        System.out.println("院长确认课程信息："+userDoInfo);
+        return mainService.reviseAddMain(userDoInfo);
     }
 
     /**
@@ -299,34 +299,6 @@ public class MainController {
         return mainService.upDataByMain(main);
     }
 
-    /**
-     * 获取 理论 学时的 系数
-     * @return
-     */
-    @GetMapping("getCExperiment")
-    public R getCExperiment(){
-        return mainService.getCExperiment();
-    }
-
-    /**
-     * 获取 有理论学时的 实验部分的 系数
-     * @return
-     */
-    @GetMapping("getCTheory")
-    public R getCTheory(){
-        return mainService.getCTheory();
-    }
-
-    /**
-     * 获取 全实际 学时的 系数
-     * @return
-     */
-    @GetMapping("getCPractice")
-    public R getCPractice(){
-        return mainService.getCPractice();
-    }
-
-    //todo：修改接口
 
     /**
      * 管理员   获取总课程信息统计结果，简略版

@@ -34,6 +34,14 @@ public class R {
         return r;
     }
 
+    public static R lapsed(){
+        R r=new R();
+        r.setCode(ResultCode.LAPSED);
+        r.setSuccess(false);
+        r.setMessage("THE TOKEN HAS EXPIRED");
+        return r;
+    }
+
     //这样就可以用点来填写参数
     public  R success(Boolean success){
         this.setSuccess(success);

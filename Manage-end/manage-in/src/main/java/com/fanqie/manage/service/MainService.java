@@ -30,6 +30,10 @@ public interface MainService extends IService<Main> {
 
     R UserSureDo(userDoInfo userDoInfo);
 
+    /**
+     * 管理员 获取 特殊情况  列表
+     * @return
+     */
     R getAdditionalSure();
 
     /**
@@ -48,15 +52,12 @@ public interface MainService extends IService<Main> {
      */
     R addMain(userDoInfo userDoInfo);
 
+    /**
+     * 院长 修改 用户的 课程信息。
+     * @param main
+     * @return
+     */
     R upDataByMain(Main main);
-
-    R getCExperiment();
-
-    R getCTheory();
-
-    R getCPractice();
-
-    R getAdditionalSureA();
 
     /**
      * 管理员 同意教师的特殊情况 申请接口
@@ -143,6 +144,20 @@ public interface MainService extends IService<Main> {
      * @return 修改信息
      */
     R reviseACoefficient(AdditionalCoefficients ac);
+
+    /**
+     * 院长 修改 课程信息
+     * @param userDoInfo
+     * @return
+     */
+    R reviseAddMain(userDoInfo userDoInfo);
+
+    /**
+     * 院长 获取新课列表
+     * @param userCheckParam
+     * @return
+     */
+    R yList(UserCheckParam userCheckParam);
 }
 
 

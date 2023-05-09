@@ -35,7 +35,10 @@ public class UserController {
 
     @PostMapping("login")
     public R login(@RequestBody User user) {
-        System.out.print("user" + user.getUserName() + user.getPassword());
+        System.out.print("user:" + user.getUserName() +"密码："+ user.getPassword());
+        if (user.getUserId().equals("") || user.getPassword().equals("")) {
+            return R.error().message("参数有误，请重新输入");
+        }
         return service.login(user);
     }
 

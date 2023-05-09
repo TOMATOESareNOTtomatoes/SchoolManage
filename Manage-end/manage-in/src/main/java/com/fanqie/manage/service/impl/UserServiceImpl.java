@@ -150,13 +150,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //检查参数 TODO:做一些校验
         String userId = user.getUserName();
         String password = user.getPassword();
-        if (userId == "" || password == "") {
-            System.out.printf("输入为空");
-            return R.error().message("参数有误，请重新输入");
-        }
         //查数据库，校验账号
         String newPwd = MD5Util.encode(password + UserConstants.USER_SLAT);
-        System.out.println("密码："+newPwd);
+        //System.out.println("密码："+newPwd);
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("user_id", userId);
         queryWrapper.eq("password", newPwd);
@@ -167,7 +163,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return R.error().message("账号或者密码错误");
         }
         String token = JwtUtils.getJwtToken(userId, userP);
-
 //        todo:将用户数据封装成对象返回。其实可以直接返回对象的，可是这样信息太多，先这样吧。
         return R.ok().data("token", token).data("url", "/home").data("userName",user1.getUserName())
                 .data("userId",user1.getUserId()).data("faculty",user1.getFaculty());

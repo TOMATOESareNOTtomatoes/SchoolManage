@@ -20,7 +20,6 @@ spring:
           predicates:
             - Path=/manage/** # 访问product相关,转发到product服务
 
-
       globalcors: # 全局的跨域处理
         add-to-simple-url-handler-mapping: true # 解决options请求被拦截问题
         corsConfigurations:

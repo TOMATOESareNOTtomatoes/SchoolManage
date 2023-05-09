@@ -28,11 +28,13 @@ public class TokenInterceptor implements HandlerInterceptor {
 //TODO：*********跳转问题
         if (JwtUtils.isTokenExpired(token)) {//判断是否过期
             System.out.println("token过期了");
-            response.setHeader("Access-Control-Allow-Origin", "");
+            response.setHeader("Access-Control-Allow-Origin", "*");
             response.sendRedirect("http://localhost:5173/"); // token 无效，重定向到登录页面
-            return false; // 请求不再继续处理
+            //return R.lapsed(); // 请求不再继续处理
+            return false;
         }
-        if (!isValidToken(token)) {
+
+        if (!isValidToken(token)) {//判断token是否有效
             response.setHeader("Access-Control-Allow-Origin", "");
             response.sendRedirect("http://localhost:5173"); // token 无效，重定向到登录页面
             return false; // 请求不再继续处理

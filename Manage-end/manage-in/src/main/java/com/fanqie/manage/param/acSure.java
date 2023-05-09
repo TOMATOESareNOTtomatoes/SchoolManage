@@ -11,11 +11,10 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 public class acSure {
+    private String userId;
     private String userName;
     private String additionalId;
-
     private double isSure;
-
     private double isFirst;
     private double isDoubleLanguage;
     private double isWeekend;
