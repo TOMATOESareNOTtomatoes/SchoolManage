@@ -10,9 +10,8 @@ import lombok.Data;
 @Data
 public class UserCheckParam {
 
-    //@NotBlank//字符串 不能为null和“”
+//    @NotBlank//字符串 不能为null和“”
     private String userId;//名字要等于前端传递的json key 名称一样才行
-
     private String faculty;
 
 }

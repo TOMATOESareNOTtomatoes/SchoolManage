@@ -35,9 +35,9 @@ public class UserController {
 
     @PostMapping("login")
     public R login(@RequestBody User user) {
-        System.out.print("user:" + user.getUserName() +"密码："+ user.getPassword());
-        if (user.getUserId().equals("") || user.getPassword().equals("")) {
-            return R.error().message("参数有误，请重新输入");
+        System.out.print("用户名:" + user.getUserName() +" 密码："+ user.getPassword());
+        if (user.getUserName() == null || user.getPassword() == null || user.getUserName().isEmpty() || user.getPassword().isEmpty()) {
+            return R.error().message("参数为空，请重新输入");
         }
         return service.login(user);
     }
@@ -73,6 +73,18 @@ public class UserController {
     public R userInfo() {
 //        return service.getAllUser();
         return service.getUserList();
+    }
+
+    /**
+     * 添加用户
+     * @param userInfo 包含用户的基本信息  和  一个权限信息
+     * @return
+     */
+    @Permission({PermissionEnum.ADMIN})
+    @PostMapping("AddUser")
+    public R AddUser(@RequestBody userInfo info) {
+        System.out.println(info);
+        return service.AddUser(info);
     }
 
     /**

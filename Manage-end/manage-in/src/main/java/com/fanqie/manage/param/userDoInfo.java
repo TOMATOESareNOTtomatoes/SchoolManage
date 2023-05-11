@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
  * 用来返回用户的 工作量显示的
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode()
 @Accessors(chain = true)
 public class userDoInfo {
 
@@ -16,27 +16,22 @@ public class userDoInfo {
      * 随机生成的数，用于记录老师教授的班级数量   以及对应的课程信息
      */
     private String uniqueNumber;
-
     /**
      * 教职工工号，也是登录的账号
      */
     private String userId;
-
     /**
      * 名字
      */
     private String userName;
-
     /**
      *  班级名称
      */
     private String className;
-
     /**
      *  班级人数
      */
     private int classNumber;
-
     /**
      * 课程名称
      */

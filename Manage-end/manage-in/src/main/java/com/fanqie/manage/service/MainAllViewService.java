@@ -32,4 +32,10 @@ public interface MainAllViewService extends IService<MainAllView> {
      */
     List<MainAllView> selectList(QueryWrapper<MainAllView> wrapper);
 
+    /**
+     * 根据院系，返回课程信息列表
+     * @param faculty
+     * @return
+     */
+    List<MainAllView> getByFaculty(String faculty);
 }

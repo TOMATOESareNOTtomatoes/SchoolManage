@@ -59,4 +59,15 @@ public class MainAllViewServiceImpl extends ServiceImpl<MainAllViewMapper, MainA
         return mapper.selectList(wrapper);
     }
 
+    /**
+     * 根据院系，返回课程信息列表
+     *
+     * @param faculty
+     * @return
+     */
+    @Override
+    public List<MainAllView> getByFaculty(String faculty) {
+        return null;
+    }
+
 }

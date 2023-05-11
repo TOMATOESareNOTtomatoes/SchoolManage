@@ -54,10 +54,10 @@ public class PrivilegesUserServiceImpl extends ServiceImpl<PrivilegesUserMapper,
                 System.out.println("查询用户权限信息失败");
                 return R.error();
             }
-            System.out.println("---------"+user2);
+            System.out.println("添加用户权限记录"+user2);
             return R.ok().data("userInfo",user2);
         }
-        System.out.println("--------"+privilegesUser);
+        System.out.println("用户的权限id："+privilegesUser.getPrivilegesId());
         return R.ok().data("userInfo",privilegesUser);
     }
 
@@ -127,6 +127,17 @@ public class PrivilegesUserServiceImpl extends ServiceImpl<PrivilegesUserMapper,
             return user2.getPrivilegesId();
         }
         return privilegesUser.getPrivilegesId();
+    }
+
+    /**
+     * 添加记录
+     *
+     * @param privilegesUser
+     * @return
+     */
+    @Override
+    public int addPrivilegesUser(PrivilegesUser privilegesUser) {
+        return privilegesUserMapper.insert(privilegesUser);
     }
 
 }

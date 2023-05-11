@@ -19,27 +19,37 @@ public class TokenInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
+//        // 设置允许跨域访问的域名
+//        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173/#/");
+//        // 设置允许跨域访问的方法
+//        response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+//        // 设置允许跨域访问的请求头
+//        response.setHeader("Access-Control-Allow-Headers", "x-requested-with, content-type");
+
         String token = request.getHeader("token"); // 获取请求头中的 token
         //System.out.println("token"+token);
         if (token == null) {
             System.out.println("token为空");
+            response.sendRedirect("http://localhost:5173/#/login");
             return false;
         }
 //TODO：*********跳转问题
         if (JwtUtils.isTokenExpired(token)) {//判断是否过期
             System.out.println("token过期了");
-            response.setHeader("Access-Control-Allow-Origin", "*");
-            response.sendRedirect("http://localhost:5173/"); // token 无效，重定向到登录页面
+            //response.setHeader("Access-Control-Allow-Origin", "*");
+            response.sendRedirect("/login");
             //return R.lapsed(); // 请求不再继续处理
             return false;
         }
 
         if (!isValidToken(token)) {//判断token是否有效
-            response.setHeader("Access-Control-Allow-Origin", "");
+            System.out.println("token无效");
+            //response.setHeader("Access-Control-Allow-Origin", "");
             response.sendRedirect("http://localhost:5173"); // token 无效，重定向到登录页面
             return false; // 请求不再继续处理
         }
 
+        //权限判断：
         // 如果不是映射到方法直接通过
         if (!(handler instanceof HandlerMethod)) {
             System.out.println("该方法没有设置权限");
@@ -86,7 +96,7 @@ public class TokenInterceptor implements HandlerInterceptor {
                 return true;
             }
         }
-        System.out.println("权限不通过："+permissionEnums.toString());
+        System.out.println("权限不通过：" + permissionEnums.toString());
         return false;
         //TODO:return false
         //return true;

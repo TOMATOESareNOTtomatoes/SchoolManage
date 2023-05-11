@@ -17,6 +17,7 @@ import com.fanqie.manage.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -140,6 +141,53 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
+     * 管理员添加用户接口
+     *
+     * @param info
+     * @return
+     */
+    @Override
+    public R AddUser(userInfo info) {
+        QueryWrapper<User> qwu=new QueryWrapper<User>();
+        qwu.eq("user_id",info.getUserId());
+        User user1 = userMapper.selectOne(qwu);
+        if(user1!=null){
+            return R.error().message("该用户已存在！");
+        }
+        User user=new User();
+        user.setUserId(info.getUserId());
+        user.setUserName(info.getUserName());
+        user.setNumber(info.getNumber());
+        user.setFaculty(info.getFaculty());
+        String newPwd = MD5Util.encode(info.getPassword() + UserConstants.USER_SLAT);
+        user.setPassword(newPwd);
+
+        user.setIsDelete(0);
+        user.setGmtCreate(new Date());
+        user.setGmtModified(new Date());
+
+        int i = userMapper.insert(user);
+        if(i!=1){
+            return R.error().message("添加用户失败！");
+        }
+        String privilegesId = privilegesService.getPrivilegesIdByName(info.getPermissions());
+        if(privilegesId==null){
+            return R.error().message("查询用户权限信息失败！");
+        }
+        PrivilegesUser privilegesUser=new PrivilegesUser();
+        privilegesUser.setPrivilegesId(privilegesId);
+        privilegesUser.setUserId(info.getUserId());
+        //添加用户权限信息
+        int ipus = privilegesUserService.addPrivilegesUser(privilegesUser);
+        if(ipus!=1){
+            return R.error().message("添加用户权限信息失败！");
+        }
+        //System.out.println("新添加用户的权限是：");
+        //System.out.println(info.getPermissions());
+        return R.ok().message("添加用户成功！");
+    }
+
+    /**
      * 登录方法
      *
      * @param user
@@ -157,11 +205,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.eq("user_id", userId);
         queryWrapper.eq("password", newPwd);
         User user1 = userMapper.selectOne(queryWrapper);
-        //token带上用户权限
-        String userP = privilegesUserService.getPrivilegesByUserId(userId);
         if (user1 == null) {
             return R.error().message("账号或者密码错误");
         }
+        //token带上用户权限
+        String userP = privilegesUserService.getPrivilegesByUserId(userId);
         String token = JwtUtils.getJwtToken(userId, userP);
 //        todo:将用户数据封装成对象返回。其实可以直接返回对象的，可是这样信息太多，先这样吧。
         return R.ok().data("token", token).data("url", "/home").data("userName",user1.getUserName())

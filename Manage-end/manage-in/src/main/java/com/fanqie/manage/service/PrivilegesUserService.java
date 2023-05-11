@@ -25,4 +25,10 @@ public interface PrivilegesUserService extends IService<PrivilegesUser> {
     //通过用户的id 返回用户的 权限
     String getPrivilegesByUserId(String userId);
 
+    /**
+     * 添加记录
+     * @param privilegesUser
+     * @return
+     */
+    int addPrivilegesUser(PrivilegesUser privilegesUser);
 }

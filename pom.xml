@@ -10,7 +10,6 @@
     <modules>
         <module>Manage-gateway</module>
         <module>Manage-commons</module>
-        <module>Manage-front-user</module>
         <module>Manage-test</module>
         <module>Manage-end</module>
     </modules>

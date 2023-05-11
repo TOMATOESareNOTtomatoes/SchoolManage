@@ -48,13 +48,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private UserService userService;
-    @Autowired
     private ClassMapper classMapper;
     @Autowired
     private TeachClassMapper teachClassMapper;
-    @Autowired
-    private MainSimpleViewService simpleViewService;
     @Autowired
     private MainAllViewServiceImpl mainAllViewViewService;
     @Autowired
@@ -65,8 +61,6 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     private CoefficientPracticeService coefficientPracticeService;  //全实验课（这里算成上机）
     @Autowired
     private CoefficientTheoryService coefficientTheoryService;  //有理论课的实验部分（这里算实验）
-    @Autowired
-    private MainOutService mainOutService;
     @Autowired
     private CalculationProcessService calculationProcessService;
     @Autowired
@@ -209,6 +203,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         //创建队列 用来返回的封装类
         List<userDoInfo> doInfoList = new ArrayList<>();
         for (MainAllView view : mainAllViews) {
+
+            //  记录班级人数超过45人后 额外增加的 系数
             double classCoefficient = 0;
             if ((view.getClassNumber() / view.getClassRow()) > 45) {
                 classCoefficient = (view.getClassNumber() / view.getClassRow()) * 0.01;
@@ -237,7 +233,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             //查看 特殊情况是否有效
             AdditionalMain am = null;
             if (view.getAdditionalId() != null) {
-                // 查询有 有效的特殊情况。
+                // 查询是否存在 有效的特殊情况。
                 am = additionalMainService.getByAdditionalId(view.getAdditionalId());
             }
             if (am != null) {
@@ -251,7 +247,6 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                 } else {
                     System.out.println("根据id查询课程信息的特殊情况查询异常！！");
                 }
-
             } else {//默认就没有系数
                 //System.out.println("没查到特殊情况");
                 doInfo.setIsFirst(0);//这个是加的系数，所以要设置为零
@@ -275,10 +270,9 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     if (view.getClassRow() > 3) {
                         //说明是4班以上，并且是双数
                         cp1 = coefficientPracticeService.getBYClassNumber(4);//四个班以上，重复的系数
-                        doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()) + "|" + cp1.getCoefficient());//设置上机系数
+                        doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
                         dou += doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() / 2 - 1);//2个班一起上的工作量
                     }
-                    //实验时长*（系数+班级人数系数+是否新课
                 } else {
                     cp = coefficientPracticeService.getBYClassNumber(1);
                     dou += doInfo.getPracticalHours() * (cp.getCoefficient() + classCoefficient + doInfo.getIsFirst());//2个班一起上的工作量
@@ -324,6 +318,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         }
         return R.ok().data("userDoInfo", doInfoList);
     }
+
+
 
     /**
      * 实现用户自己添加课程 特殊 情况。
@@ -707,7 +703,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
                     return getUserDoInfo(additionalMain, userDoInfo);
                 })
                 .collect(Collectors.toList());
-        System.out.println("管理员的确认队列：\n" + userDoInfoList);
+        //System.out.println("管理员的确认队列：\n" + userDoInfoList);
         return R.ok().data("userDoInfoList", userDoInfoList);
     }
 
@@ -757,156 +753,169 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
     @Override
     public R UserReviseDo(userDoInfo userDoInfo) {
         QueryWrapper<Main> mainQueryWrapper = new QueryWrapper<>();
+
         mainQueryWrapper.eq("unique_number", userDoInfo.getUniqueNumber());
+                //.ne("is_sure",1);
+               // .notIn("is_sure",1,5,9);  //已经确认过了就不能修改。
         //todo：添加未被删除查询。
         Main main = mainMapper.selectOne(mainQueryWrapper);
-        if (main != null) {
-            //说明不是用户自己修改。
-            if (!main.getUserId().equals(userDoInfo.getUserId())) {
-
-                Teach teach = teachMapper.selectOne(new QueryWrapper<Teach>()
-                        .eq("teach_id", userDoInfo.getUniqueNumber()));
-                if (teach != null) {
-                    teach.setTeachName(userDoInfo.getTeachName());
-                    teach.setTeachNumber(userDoInfo.getClassNumber());
-                    teach.setTheoreticalHours(String.valueOf(userDoInfo.getTheoreticalHours()));
-                    teach.setPracticalHours(String.valueOf(userDoInfo.getPracticalHours()));
-                    int i = teachMapper.updateById(teach);
-                    if (i != 1) {
-                        return R.error().message("院长修改出错！teach");
-                    }
-                }
-                String[] arr = userDoInfo.getClassName().split("\\+");
-                for (String y : arr) {
-                    QueryWrapper<Class> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.eq("class_name", y);
-                    Class aClass = classMapper.selectOne(queryWrapper);
-                    if (aClass == null) {
-                        // Add new class
-                        Class c = new Class();
-                        c.setClassName(y);
-                        c.setClassId(RandomNumberGenerator.generate());
-                        classMapper.insert(c);
-                        aClass = classMapper.selectOne(queryWrapper);
-                    }
-                    TeachClass teachClass = new TeachClass();
-                    teachClass.setClassId(aClass.getClassId());
-                    teachClass.setUniqueNumber(userDoInfo.getUniqueNumber());
-                    int i = teachClassMapper.insert(teachClass);
-                    if (i != 1) {
-                        return R.error().message("院长修改出错！teachClass");
-                    }
-                }
-
-                AdditionalMain additionalMain = additionalMainService.getOne(new QueryWrapper<AdditionalMain>()
-                        .eq("additional_id", userDoInfo.getUniqueNumber())
-                        .ne("is_delete", 1)
-                );
-                if (additionalMain != null) {
-                    //说明本来存在特殊情况。
-                    if (!userDoInfo.getIsSure().equals("3")) {
-                        //说明现在取消了。
-                        additionalMain.setIsDelete(1);
-                        boolean b = additionalMainService.updateById(additionalMain);
-                        if (!b) {
-                            return R.error().message("院长修改出错！AdditionalA");
-                        }
-                    }
-                    additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
-                            userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend()));
-                    boolean b = additionalMainService.updateById(additionalMain);
-                    if (!b) {
-                        return R.error().message("院长修改出错！Additional");
-                    }
-                }
-                main.setUserPlusId(userDoInfo.getUserId());
-                main.setIsSure(5);//代表院长已经确认
-                int i = mainMapper.update(main, new UpdateWrapper<Main>()
-                        .eq("unique_number", userDoInfo.getUniqueNumber()));
-                if (i != 1) {
-                    return R.error().message("院长修改出错！main");
-                }
-                return R.ok().message("院长修改记录成功！");
-            } else {
-                //删除旧的记录。
-                main.setIsDelete(1);
-                int iu = mainMapper.updateById(main);
-                if (iu != 1) {
-                    return R.error().message("修改信息失败！");
-                }
-                //添加新的main 记录
-                Main newMain = new Main();
-                String uNumber = UUIDStringUtils.randomUUID();
-                newMain.setUniqueNumber(uNumber);
-                newMain.setBeforeId(userDoInfo.getUniqueNumber());
-                newMain.setUserId(userDoInfo.getUserId());
-                newMain.setTerm(String.valueOf(new Date()));
-                if (!userDoInfo.getIsSure().equals("3")) {
-                    //说明存在特殊情况。
-                    newMain.setAdditionalId(uNumber);
-                }
-                mainMapper.insert(newMain);
-                //课程表添加信息
-                Teach teach = new Teach();
-                teach.setTeachId(uNumber);
-                teach.setTeachName(userDoInfo.getTeachName());
-                teach.setTeachNumber(userDoInfo.getClassNumber());//课程人数
-                teach.setTheoreticalHours(String.valueOf(userDoInfo.getTheoreticalHours()));
-                teach.setPracticalHours(String.valueOf(userDoInfo.getPracticalHours()));
-                int insert1 = teachMapper.insert(teach);
-                if (insert1 != 1) {
-                    return R.error().message("添加课程信息失败2");
-                }
-                //保存班级信息
-                String[] arr = userDoInfo.getClassName().split("\\+");
-                System.out.print("班级：" + userDoInfo.getClassName() + "\n");
-                for (String y : arr) {
-                    System.out.print("一个班级：" + y + "\n");
-                    QueryWrapper queryWrapper = new QueryWrapper();
-                    queryWrapper.eq("class_name", y);
-                    Class aClass = classMapper.selectOne(queryWrapper);
-                    if (aClass == null) {
-                        //查询不到班级信息，添加班级
-                        Class c = new Class();
-                        c.setClassName(y);
-                        c.setClassId(RandomNumberGenerator.generate());
-                        //c.setClassNumber(userDoInfo.getClassNumber() / arr.length);
-                        int i = classMapper.insert(c);
-                        if (i != 1) {
-                            return R.error().message("修改信息失败3！");
-                        } else {
-                            aClass = classMapper.selectOne(queryWrapper);
-                            if (aClass == null) {
-                                return R.error().message("修改信息失败4！");
-                            }
-                        }
-                    }
-                    //查询到班级id  添加teachClass表信息
-                    TeachClass teachClass = new TeachClass();
-                    teachClass.setClassId(aClass.getClassId());
-                    teachClass.setUniqueNumber(uNumber);
-                    int itc = teachClassMapper.insert(teachClass);
-                    if (itc != 1) {
-                        return R.error().message("添加课程信息失败3");
-                    }
-                }
-                //添加特殊情况  isSure=3 说明不存在特殊情况。
-                if (!userDoInfo.getIsSure().equals("3")) {
-                    AdditionalMain additionalMain = new AdditionalMain();
-                    additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
-                    additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
-                            userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend()));
-                    //todo:目前是还会再特殊情况里面出现，要想不出现的话，设置成其他值。比如 9
-                    additionalMain.setIsSure(1);
-                    int ami = additionalMainService.getBaseMapper().insert(additionalMain);
-                    if (ami != 1) {
-                        return R.error().message("添加课程信息失败4");
-                    }
-                }
-                return R.ok().message("修改成功！！");
+        if(main==null){
+            R.error().message("查询不到该课程信息，可能已被删除！");
+        }
+        if(main.getIsSure()!=null){
+            if(main.getIsSure()==1){
+                R.error().message("该课程信息已确认，不能修改！");
+            }
+            if(main.getIsSure()==5){
+                R.error().message("该课程信息已修改，并且通过院长审核，不可修改！");
+            }
+            if(main.getIsSure()==9){
+                R.error().message("该课程信息已修改，并且通过管理员审核，不可修改！");
             }
         }
-        return R.error().message("查询不到课程信息！！");
+        //说明不是用户自己修改。
+        if (!main.getUserId().equals(userDoInfo.getUserId())) {
+            Teach teach = teachMapper.selectOne(new QueryWrapper<Teach>()
+                    .eq("teach_id", userDoInfo.getUniqueNumber()));
+            if (teach != null) {
+                teach.setTeachName(userDoInfo.getTeachName());
+                teach.setTeachNumber(userDoInfo.getClassNumber());
+                teach.setTheoreticalHours(String.valueOf(userDoInfo.getTheoreticalHours()));
+                teach.setPracticalHours(String.valueOf(userDoInfo.getPracticalHours()));
+                int i = teachMapper.updateById(teach);
+                if (i != 1) {
+                    return R.error().message("院长修改出错！teach");
+                }
+            }
+            String[] arr = userDoInfo.getClassName().split("\\+");
+            for (String y : arr) {
+                QueryWrapper<Class> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("class_name", y);
+                Class aClass = classMapper.selectOne(queryWrapper);
+                if (aClass == null) {
+                    // Add new class
+                    Class c = new Class();
+                    c.setClassName(y);
+                    c.setClassId(RandomNumberGenerator.generate());
+                    classMapper.insert(c);
+                    aClass = classMapper.selectOne(queryWrapper);
+                }
+                TeachClass teachClass = new TeachClass();
+                teachClass.setClassId(aClass.getClassId());
+                teachClass.setUniqueNumber(userDoInfo.getUniqueNumber());
+                int i = teachClassMapper.insert(teachClass);
+                if (i != 1) {
+                    return R.error().message("院长修改出错！teachClass");
+                }
+            }
+            AdditionalMain additionalMain = additionalMainService.getOne(new QueryWrapper<AdditionalMain>()
+                    .eq("additional_id", userDoInfo.getUniqueNumber())
+                    .ne("is_delete", 1)
+            );
+            if (additionalMain != null) {
+                //说明本来存在特殊情况。
+                if (!userDoInfo.getIsSure().equals("3")) {
+                    //说明现在取消了。
+                    additionalMain.setIsDelete(1);
+                    boolean b = additionalMainService.updateById(additionalMain);
+                    if (!b) {
+                        return R.error().message("院长修改出错！AdditionalA");
+                    }
+                }
+                additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
+                        userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend()));
+                boolean b = additionalMainService.updateById(additionalMain);
+                if (!b) {
+                    return R.error().message("院长修改出错！Additional");
+                }
+            }
+            main.setUserPlusId(userDoInfo.getUserId());
+            main.setIsSure(5);//代表院长已经确认
+            int i = mainMapper.update(main, new UpdateWrapper<Main>()
+                    .eq("unique_number", userDoInfo.getUniqueNumber()));
+            if (i != 1) {
+                return R.error().message("院长修改出错！main");
+            }
+            return R.ok().message("院长修改记录成功！");
+        } else {
+            //删除旧的记录。自己修改的。
+            //修改逻辑：保存唯一id  添加新记录
+            main.setIsDelete(1);
+            int iu = mainMapper.updateById(main);
+            if (iu != 1) {
+                return R.error().message("修改信息失败！");
+            }
+            //添加新的main 记录
+            Main newMain = new Main();
+            String uNumber = UUIDStringUtils.randomUUID();
+            newMain.setUniqueNumber(uNumber);
+            newMain.setBeforeId(userDoInfo.getUniqueNumber());
+            newMain.setUserId(userDoInfo.getUserId());
+            newMain.setTerm(String.valueOf(new Date()));
+            if (!userDoInfo.getIsSure().equals("3")) {
+                //说明存在特殊情况。
+                newMain.setAdditionalId(uNumber);
+            }
+            mainMapper.insert(newMain);
+            //课程表添加信息
+            Teach teach = new Teach();
+            teach.setTeachId(uNumber);
+            teach.setTeachName(userDoInfo.getTeachName());
+            teach.setTeachNumber(userDoInfo.getClassNumber());//课程人数
+            teach.setTheoreticalHours(String.valueOf(userDoInfo.getTheoreticalHours()));
+            teach.setPracticalHours(String.valueOf(userDoInfo.getPracticalHours()));
+            int insert1 = teachMapper.insert(teach);
+            if (insert1 != 1) {
+                return R.error().message("添加课程信息失败2");
+            }
+            //保存班级信息
+            String[] arr = userDoInfo.getClassName().split("\\+");
+            System.out.print("班级：" + userDoInfo.getClassName() + "\n");
+            for (String y : arr) {
+                System.out.print("一个班级：" + y + "\n");
+                QueryWrapper queryWrapper = new QueryWrapper();
+                queryWrapper.eq("class_name", y);
+                Class aClass = classMapper.selectOne(queryWrapper);
+                if (aClass == null) {
+                    //查询不到班级信息，添加班级
+                    Class c = new Class();
+                    c.setClassName(y);
+                    c.setClassId(RandomNumberGenerator.generate());
+                    //c.setClassNumber(userDoInfo.getClassNumber() / arr.length);
+                    int i = classMapper.insert(c);
+                    if (i != 1) {
+                        return R.error().message("修改信息失败3！");
+                    } else {
+                        aClass = classMapper.selectOne(queryWrapper);
+                        if (aClass == null) {
+                            return R.error().message("修改信息失败4！");
+                        }
+                    }
+                }
+                //查询到班级id  添加teachClass表信息
+                TeachClass teachClass = new TeachClass();
+                teachClass.setClassId(aClass.getClassId());
+                teachClass.setUniqueNumber(uNumber);
+                int itc = teachClassMapper.insert(teachClass);
+                if (itc != 1) {
+                    return R.error().message("添加课程信息失败3");
+                }
+            }
+            //添加特殊情况  isSure=3 说明不存在特殊情况。
+            if (!userDoInfo.getIsSure().equals("3")) {
+                AdditionalMain additionalMain = new AdditionalMain();
+                additionalMain.setAdditionalId(uNumber);//新课的话，其特殊情况值是跟唯一值相同的。
+                additionalMain.setAdditionalCoefficientsId(getAdditionalCoefficientsId(userDoInfo.getIsFirst(),
+                        userDoInfo.getIsDoubleLanguage(), userDoInfo.getIsWeekend()));
+                //todo:目前是还会再特殊情况里面出现，要想不出现的话，设置成其他值。比如 9
+                additionalMain.setIsSure(1);
+                int ami = additionalMainService.getBaseMapper().insert(additionalMain);
+                if (ami != 1) {
+                    return R.error().message("添加课程信息失败4");
+                }
+            }
+            return R.ok().message("修改成功！！");
+        }
     }
 
     /**
@@ -1039,7 +1048,7 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
      * @return
      */
     @Override
-    public R yList(UserCheckParam userCheckParam) {
+    public R yyyyList(UserCheckParam userCheckParam) {
         QueryWrapper<Main> queryWrapper = new QueryWrapper<>();
         List<MainAllView> mainAllViewList = new ArrayList<MainAllView>();
         List<userDoInfo> userDoInfoList = new ArrayList<userDoInfo>();
@@ -1052,8 +1061,8 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
         List<Main> mainList = mainMapper.selectList(queryWrapper);
         //System.out.println("mainList\n");
         //System.out.println(mainList);
-        if (mainList == null) {
-            R.ok().message("不存在待确认的课程信息！！！");
+        if (mainList == null || mainList.isEmpty()) {
+            return R.ok().message("不存在待确认的课程信息！！！");
         }
         for (Main main : mainList) {
             QueryWrapper<MainAllView> wrapper = new QueryWrapper<>();
@@ -1061,6 +1070,10 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             wrapper.eq("faculty", userCheckParam.getFaculty());
             List<MainAllView> list = mainAllViewViewService.selectList(wrapper);
             mainAllViewList.addAll(list);
+        }
+
+        if (mainAllViewList.isEmpty()) {
+            return R.ok().message("不存在待确认的课程信息！！！").data("list",mainAllViewList);
         }
 
         for (MainAllView mainAllView : mainAllViewList) {
@@ -1085,12 +1098,146 @@ public class MainServiceImpl extends ServiceImpl<MainMapper, Main> implements Ma
             userDoInfo.setTheoreticalHours(Integer.parseInt(mainAllView.getTheoreticalHours()));
             userDoInfoList.add(userDoInfo);
         }
+
         if (userDoInfoList.isEmpty()) {
             R.ok().message("不存在待确认的课程信息！！！");
         }
-        //System.out.println("userDoInfoList\n");
-        //System.out.println(userDoInfoList);
+        System.out.println("userDoInfoList\n");
+        System.out.println(userDoInfoList);
         return R.ok().data("list", userDoInfoList).data("l",null).message("成功");
+    }
+
+    /**
+     * 院长  通过院系获取院系的课程 信息列表
+     *
+     * @param userCheckParam 院系名称
+     * @return 课程信息列表，某学院的
+     */
+    @Override
+    public R getUserDoByFaculty(UserCheckParam userCheckParam) {
+        System.out.println("院系："+userCheckParam.getFaculty());
+        QueryWrapper<MainAllView> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("faculty",userCheckParam.getFaculty());
+        List<MainAllView> mainAllViews = mainAllViewViewService.selectList(queryWrapper);
+        if (mainAllViews==null || mainAllViews.size() == 0) {
+            R.error().message("查询教师课程信息失败！！,该教师没有授课记录！！！");
+        }
+        List<userDoInfo> doInfoList = new ArrayList<>();
+        for (MainAllView view : mainAllViews) {
+            System.out.println("学院的课程名称："+ view.getTeachName());
+            //  记录班级人数超过45人后 额外增加的 系数
+            double classCoefficient = 0;
+            if ((view.getClassNumber() / view.getClassRow()) > 45) {
+                classCoefficient = (view.getClassNumber() / view.getClassRow()) * 0.01;
+            }
+            //将部分信息直接复制过来
+            userDoInfo doInfo = new userDoInfo();
+            //doInfo.setIsSure("0");//设置未确认
+            doInfo.setIsSure(String.valueOf(view.getIsSure()));//设置未确认
+            //直接赋值
+            doInfo.setUserId(view.getUserId());
+            doInfo.setUserName(view.getUserName());
+            doInfo.setClassName(view.getClassName());
+            doInfo.setUniqueNumber(view.getUniqueNumber());
+            doInfo.setClassNumber(view.getClassNumber());
+            doInfo.setTeachName(view.getTeachName());
+            //todo：可以删除了，重新录入数据的话。
+            if (view.getPracticalHours() == null) {
+                view.setPracticalHours("0");
+            }
+            if (view.getTheoreticalHours() == null) {
+                view.setTheoreticalHours("0");
+            }
+            doInfo.setPracticalHours(Integer.parseInt(view.getPracticalHours()));
+            doInfo.setTheoreticalHours(Integer.parseInt(view.getTheoreticalHours()));
+            //---------------------------------------------
+            //查看 特殊情况是否有效
+            AdditionalMain am = null;
+            if (view.getAdditionalId() != null) {
+                // 查询是否存在 有效的特殊情况。
+                am = additionalMainService.getByAdditionalId(view.getAdditionalId());
+            }
+            if (am != null) {
+                //通过唯一 id 查询 返回特殊情况的系数
+                System.out.println("获取教师个人工作量，系数id：" + am.getAdditionalCoefficientsId());
+                AdditionalCoefficients additionalCoefficients = additionalCoefficientsService.selectByAdditionalId(am.getAdditionalCoefficientsId());//查询系数
+                if (additionalCoefficients != null) {
+                    doInfo.setIsFirst(additionalCoefficients.getIsFirst());
+                    doInfo.setIsDoubleLanguage(additionalCoefficients.getIsDoubleLanguage());
+                    doInfo.setIsWeekend(additionalCoefficients.getIsWeekend());
+                } else {
+                    System.out.println("根据id查询课程信息的特殊情况查询异常！！");
+                }
+            } else {//默认就没有系数
+                //System.out.println("没查到特殊情况");
+                doInfo.setIsFirst(0);//这个是加的系数，所以要设置为零
+                doInfo.setIsDoubleLanguage(1);//这些是乘的
+                doInfo.setIsWeekend(1);
+            }
+
+            //计算工作量
+            double dou = 0;//保存工作量的过程量
+            //  TheoreticalHours 理论学时  ，为零，说明全是实验，当作上机
+            if (view.getTheoreticalHours() == null || view.getTheoreticalHours().equals("") ||
+                    view.getTheoreticalHours().equals("0")) {
+                doInfo.setCoefficientL("0");
+                //全实践课，查看根据班级情况，返回实践课内容
+                CoefficientPractice cp;
+                CoefficientPractice cp1;//因为重复的系数不一样，创建了两个变量，虽然一个也可以。
+                if (view.getClassRow() % 2 == 0) {
+                    cp = coefficientPracticeService.getBYClassNumber(2);//算两个班一起上，不存在重复
+                    doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()));//设置上机系数
+                    dou += doInfo.getPracticalHours() * (cp.getCoefficient() + doInfo.getIsFirst() + classCoefficient);//2个班一起上的工作量
+                    if (view.getClassRow() > 3) {
+                        //说明是4班以上，并且是双数
+                        cp1 = coefficientPracticeService.getBYClassNumber(4);//四个班以上，重复的系数
+                        doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
+                        dou += doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() / 2 - 1);//2个班一起上的工作量
+                    }
+                } else {
+                    cp = coefficientPracticeService.getBYClassNumber(1);
+                    dou += doInfo.getPracticalHours() * (cp.getCoefficient() + classCoefficient + doInfo.getIsFirst());//2个班一起上的工作量
+                    if (view.getClassRow() > 2) {
+                        //说明是2个班以上，是单数
+                        cp1 = coefficientPracticeService.getBYClassNumber(3);
+                        doInfo.setCoefficientS(cp.getCoefficient() + "|" + cp1.getCoefficient());//设置上机系数
+                        dou += ((doInfo.getPracticalHours() * (cp1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1)) * (view.getClassRow() - 1));//单个班上课
+                    } else {
+                        doInfo.setCoefficientS(String.valueOf(cp.getCoefficient()));
+                    }
+                }
+            } else {
+                //有两种情况，一种上机学时为零，全是理论；一种一半一半， 实验系数查询不同的表，理论一样
+                // 根据班级数量，查看理论课的系数
+                CoefficientExperiment ce;//理论表系数
+                if (view.getClassRow() <= 4) {
+                    //四个班以下
+                    //System.out.println("班级数量；" + view.getClassRow());
+                    ce = coefficientExperimentService.getByClassNumber(view.getClassRow());
+                } else { //四个班以上，按照四个班算
+                    ce = coefficientExperimentService.getByClassNumber(4);
+                }
+                dou += (doInfo.getTheoreticalHours() * (ce.getCoefficient() + doInfo.getIsFirst() + classCoefficient));//理论课部分的工作量
+                dou *= doInfo.getIsDoubleLanguage();//如果是双语，乘以1.5
+
+                doInfo.setCoefficientL(String.valueOf(ce.getCoefficient()));//设置理论系数
+                CoefficientTheory ct = coefficientTheoryService.getByClassNumber(1);//有理论的，实验系数
+                //System.out.println("有理论课的实验系数:" + ct.getCoefficient());
+                doInfo.setCoefficientS(String.valueOf(ct.getCoefficient()));
+                dou += doInfo.getPracticalHours() * (ct.getCoefficient() + doInfo.getIsFirst() + classCoefficient);
+                CoefficientTheory ct1;
+                if (view.getClassRow() > 1) {//班级数大于一的话，
+                    ct1 = coefficientTheoryService.getByClassNumber(2);
+                    doInfo.setCoefficientS(ct.getCoefficient() + "|" + ct1.getCoefficient());
+                    dou += doInfo.getPracticalHours() * (ct1.getCoefficient() + doInfo.getIsFirst() + classCoefficient) * (view.getClassRow() - 1);
+                }
+            }
+            dou *= doInfo.getIsWeekend();//是否周末，实验部分没有双语的
+            doInfo.setAdd(dou);
+            //tODO: 四舍五入。现在小数位数太多
+            doInfoList.add(doInfo);
+        }
+        return R.ok().data("userDoInfo", doInfoList);
     }
 
     /**

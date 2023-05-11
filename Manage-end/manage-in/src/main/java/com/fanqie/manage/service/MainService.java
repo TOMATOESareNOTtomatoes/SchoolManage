@@ -157,7 +157,14 @@ public interface MainService extends IService<Main> {
      * @param userCheckParam
      * @return
      */
-    R yList(UserCheckParam userCheckParam);
+    R yyyyList(UserCheckParam userCheckParam);
+
+    /**
+     * 院长  通过院系获取院系的课程 信息列表
+     * @param userCheckParam 院系名称
+     * @return 课程信息列表，某学院的
+     */
+    R getUserDoByFaculty(UserCheckParam userCheckParam);
 }
 
 

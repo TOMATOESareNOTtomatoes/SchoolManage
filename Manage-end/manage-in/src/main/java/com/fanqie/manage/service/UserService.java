@@ -43,4 +43,11 @@ public interface UserService extends IService<User> {
     R deleteUser(User user);
 
     User getUserByUserId(String userId);
+
+    /**
+     * 管理员添加用户接口
+     * @param info
+     * @return
+     */
+    R AddUser(userInfo info);
 }

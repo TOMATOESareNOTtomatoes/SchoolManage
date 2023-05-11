@@ -28,6 +28,7 @@ public class PrivilegesUserController {
      * @param request
      * @return
      */
+    //@CrossOrigin(origins = "http://localhost:5173")
     @GetMapping("Info")
     public R Info(HttpServletRequest request){
         //根据request的头查询用户的id
