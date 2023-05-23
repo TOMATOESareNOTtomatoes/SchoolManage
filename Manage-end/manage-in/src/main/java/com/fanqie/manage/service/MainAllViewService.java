@@ -38,4 +38,11 @@ public interface MainAllViewService extends IService<MainAllView> {
      * @return
      */
     List<MainAllView> getByFaculty(String faculty);
+
+    /**
+     *
+     * @param wrapper
+     * @return
+     */
+    MainAllView selectOne(QueryWrapper<MainAllView> wrapper);
 }

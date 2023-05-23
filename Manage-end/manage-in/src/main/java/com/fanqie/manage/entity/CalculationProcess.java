@@ -33,7 +33,7 @@ public class CalculationProcess implements Serializable {
     /**
      * 唯一id
      */
-    private String additionalId;
+    private String calculationProcessId;
 
     /**
      * 是否教授新课，记录系数。0则不是新课。

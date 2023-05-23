@@ -273,22 +273,11 @@ public class MainController {
     /**
      * 院长 获取  待确认  课程信息 列表
      */
-    @PostMapping("lllAddMainList")
+    @PostMapping("AddMainList")
     @Permission({PermissionEnum.ADMIN, PermissionEnum.UserPlus})
     public R getAddMainList(@RequestBody UserCheckParam userCheckParam) {
 //        return R.ok().message("成功").data("userDoInfoList",null);
         return mainService.getAddMainList(userCheckParam);
-    }
-//TODO：方法有毛病*******************
-    @PostMapping("YList")
-    @Permission({PermissionEnum.ADMIN, PermissionEnum.UserPlus})
-    public R dddList(@RequestBody UserCheckParam userCheckParam) {
-        if (userCheckParam.getFaculty() == null
-                || userCheckParam.getUserId() == null) {
-            return R.error().message("参数有误！");
-        }
-        System.out.println("院长获取新课列表的接口调用了。");
-        return mainService.yyyyList(userCheckParam);
     }
 
     /**

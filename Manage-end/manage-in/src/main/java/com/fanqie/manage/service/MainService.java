@@ -153,13 +153,6 @@ public interface MainService extends IService<Main> {
     R reviseAddMain(userDoInfo userDoInfo);
 
     /**
-     * 院长 获取新课列表
-     * @param userCheckParam
-     * @return
-     */
-    R yyyyList(UserCheckParam userCheckParam);
-
-    /**
      * 院长  通过院系获取院系的课程 信息列表
      * @param userCheckParam 院系名称
      * @return 课程信息列表，某学院的

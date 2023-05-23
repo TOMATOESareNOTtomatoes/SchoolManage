@@ -1,4 +1,4 @@
-package com.fanqie;
+package com.fanqie.notice;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;

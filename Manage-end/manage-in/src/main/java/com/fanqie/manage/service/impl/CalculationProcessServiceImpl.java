@@ -4,6 +4,7 @@ import com.fanqie.manage.entity.CalculationProcess;
 import com.fanqie.manage.mapper.CalculationProcessMapper;
 import com.fanqie.manage.service.CalculationProcessService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,8 +18,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class CalculationProcessServiceImpl extends ServiceImpl<CalculationProcessMapper, CalculationProcess> implements CalculationProcessService {
 
-    @Override
-    public void Insert(CalculationProcess calculationProcess) {
+    @Autowired
+    CalculationProcessMapper mapper;
 
+    @Override
+    public int Insert(CalculationProcess calculationProcess) {
+        return mapper.insert(calculationProcess);
     }
 }

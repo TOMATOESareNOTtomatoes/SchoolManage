@@ -33,7 +33,7 @@ public class Teach implements Serializable {
     /**
      * 工具生成的唯一id，放在工作量统计表里对应用的
      */
-    private String teachId;
+    private String uniqueNumber;
 
     /**
      * 课程名称

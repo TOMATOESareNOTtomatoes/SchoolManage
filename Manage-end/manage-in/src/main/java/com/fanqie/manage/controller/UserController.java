@@ -82,9 +82,9 @@ public class UserController {
      */
     @Permission({PermissionEnum.ADMIN})
     @PostMapping("AddUser")
-    public R AddUser(@RequestBody userInfo info) {
-        System.out.println(info);
-        return service.AddUser(info);
+    public R AddUser(@RequestBody userInfo userInfo) {
+        System.out.println(userInfo);
+        return service.AddUser(userInfo);
     }
 
     /**

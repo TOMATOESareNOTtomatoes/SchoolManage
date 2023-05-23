@@ -16,6 +16,7 @@ public interface CalculationProcessService extends IService<CalculationProcess> 
     /**
      * 添加记录、计算过程保存。
      * @param calculationProcess
+     * @return
      */
-    void Insert(CalculationProcess calculationProcess);
+    int Insert(CalculationProcess calculationProcess);
 }

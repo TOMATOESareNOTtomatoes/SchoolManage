@@ -19,8 +19,8 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="Manage-commons" options="-parameters" />
-      <module name="Manage-end" options="-parameters" />
+      <module name="Manage-commons" options="" />
+      <module name="Manage-end" options="" />
       <module name="Manage-gateway" options="-parameters" />
       <module name="Manage-notice" options="-parameters" />
       <module name="Manage-test" options="-parameters" />

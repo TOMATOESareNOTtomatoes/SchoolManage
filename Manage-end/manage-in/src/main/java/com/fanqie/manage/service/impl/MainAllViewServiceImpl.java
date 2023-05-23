@@ -67,7 +67,17 @@ public class MainAllViewServiceImpl extends ServiceImpl<MainAllViewMapper, MainA
      */
     @Override
     public List<MainAllView> getByFaculty(String faculty) {
+        System.out.println("用到了没有实现的方法！MainAllViewServiceImpl");
         return null;
+    }
+
+    /**
+     * @param wrapper
+     * @return
+     */
+    @Override
+    public MainAllView selectOne(QueryWrapper<MainAllView> wrapper) {
+        return mapper.selectOne(wrapper);
     }
 
 }

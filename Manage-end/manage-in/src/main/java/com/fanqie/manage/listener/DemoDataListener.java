@@ -120,7 +120,7 @@ public class DemoDataListener implements ReadListener<excelDemo> {
         }
         //添加课程信息
         Teach teach=new Teach();
-        teach.setTeachId(s);
+        teach.setUniqueNumber(s);
         teach.setTeachName(data.getTeachName());
         //todo:优化：通过过滤器实现赋值。
         if(data.getPracticalHours()==null){
